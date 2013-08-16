@@ -1,0 +1,62 @@
+
+sax = require('sax')
+http = require('http')
+
+class Ubike
+
+    constructor: () ->
+        @xml_source = 'http://www.youbike.com.tw/genxml9.php?lat=25.037525&lng=121.56378199999995&radius=5&mode=0'
+        @parser = sax.parser(true)
+
+    search: (site_name) =>
+
+        if (@markers?)
+            for station in @markers
+                if (station.name is site_name)
+                    return station
+
+        return []
+
+    parse_xml: (xml, cb) =>
+
+        @markers = []
+        @parser.onclosetag = (tagName) ->
+
+        @parser.onopentag = (tag) =>
+            if (tag.name? and tag.name is 'marker')
+                @markers.push(tag.attributes)
+
+        @parser.ontext = (text) ->
+        
+        @parser.onend = =>
+            @ubike_stations = JSON.stringify(@markers)
+            if (cb?)
+                cb!
+
+        @parser.write(xml).end!
+
+    request: (cb) =>
+
+            @data = ''
+
+            crawler = (res) =>
+                #console.log("Got response: " + res.statusCode)
+                (chunk) <~ res.on('data', _)
+                    @data += chunk
+
+                () <~ res.on('end', _)
+                    @parse_xml(@data, cb)
+
+            (e) <- http.get(@xml_source, crawler).on('error', _)
+                console.log("Got error: " + e.message)
+                throw e
+
+# Usage            
+# ubike = new Ubike
+
+#() <- ubike.request!
+#    sta = ubike.search('台北市政府')
+#    console.log(sta['name'])
+
+exports.Ubike = Ubike
+

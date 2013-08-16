@@ -1,0 +1,21 @@
+
+assert = require('assert')
+
+() <- describe('Ubike')
+    () <- describe('#request()')
+        () <- it('should return xml document withour error')
+            Ubike = require('../ubike')
+            ubike = new Ubike.Ubike
+
+            ubike.request!
+
+    () <- describe('#search()')
+        (done) <- it('should return correct station object')
+            Ubike = require('../ubike')
+            ubike = new Ubike.Ubike
+
+            () <- ubike.request!
+                assert.strictEqual(ubike.search('台北市政府')['name'], '台北市政府')
+                done!
+
+
