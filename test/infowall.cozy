@@ -1,0 +1,21 @@
+
+assert = require('assert')
+
+() <- describe('InfoWall')
+    () <- describe('#update()')
+        () <- it('should construct mqueues withour error')
+            InfoWall = require('../infowall')
+            infowall = new InfoWall.InfoWall
+
+            infowall.update!
+
+    () <- describe('#()')
+        (done) <- it('should construct mqueues for all markers')
+            InfoWall = require('../infowall')
+            infowall = new InfoWall.InfoWall
+
+            (mqueues) <- infowall.update!
+                for marker in infowall.get_markers!
+                    assert(mqueues[marker.name]?)
+                done! 
+ 

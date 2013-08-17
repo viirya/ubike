@@ -7,6 +7,10 @@ class Ubike
     constructor: () ->
         @xml_source = 'http://www.youbike.com.tw/genxml9.php?lat=25.037525&lng=121.56378199999995&radius=5&mode=0'
         @parser = sax.parser(true)
+        @markers = []
+
+    get_markers: () =>
+        return @markers
 
     search: (site_name) =>
 

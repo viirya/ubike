@@ -18,4 +18,13 @@ assert = require('assert')
                 assert.strictEqual(ubike.search('台北市政府')['name'], '台北市政府')
                 done!
 
+ 
+    () <- describe('#get_markers()')
+        (done) <- it('should return station objects')
+            Ubike = require('../ubike')
+            ubike = new Ubike.Ubike
 
+            () <- ubike.request!
+                assert(ubike.get_markers!.length > 0)
+                done!
+ 

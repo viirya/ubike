@@ -23,14 +23,16 @@ class MQueue
  
     append_slot_status: (cur_station_status) =>
         @slots.push({'sus': cur_station_status.sus, 'mday': cur_station_status.mday})
- 
+
+    # check if bike is increased. if yes, add it into queue 
     update_bike_status: (cur_station_status) =>
         if @bikes.length >= 1
             if @compare_bike(@latest_bike_status!, cur_station_status) > 0
                 @append_bike_status(cur_station_status)
         else
             @append_bike_status(cur_station_status)
- 
+
+    # check if slot is increased. if yes, add it into queue 
     update_slot_status: (cur_station_status) =>
         if @slots.length >= 1
             if @compare_slot(@latest_slot_status!, cur_station_status) > 0
@@ -63,6 +65,35 @@ class MQueue
                 prev_bike = bike    
 
         return diff
+
+    diff_slot_status: () =>
+        diff = []
+        if @slots.length >= 1
+            prev_slot = null
+            for slot in @slots
+                if prev_slot?
+                    prev_time = Date.parse(prev_slot.mday)
+                    cur_time = Date.parse(slot.mday)
+                    diff.push((cur_time - prev_time) / 1000)
+            
+                prev_slot = slot    
+
+        return diff
+
+    mean_of_diff: (diff) =>
+        mean = Number.MAX_VALUE
+
+        if diff.length > 0
+            mean = 0
+
+            (val) <- diff.forEach!
+                mean += val
+
+            mean /= diff.length
+
+        return mean
+
+
 
 exports.MQueue = MQueue
 

@@ -12,9 +12,15 @@
     function Ubike() {
       this.request = __bind(this.request, this);
       this.parse_xml = __bind(this.parse_xml, this);
-      this.search = __bind(this.search, this);      this.xml_source = 'http://www.youbike.com.tw/genxml9.php?lat=25.037525&lng=121.56378199999995&radius=5&mode=0';
+      this.search = __bind(this.search, this);
+      this.get_markers = __bind(this.get_markers, this);      this.xml_source = 'http://www.youbike.com.tw/genxml9.php?lat=25.037525&lng=121.56378199999995&radius=5&mode=0';
       this.parser = sax.parser(true);
+      this.markers = [];
     }
+
+    Ubike.prototype.get_markers = function() {
+      return this.markers;
+    };
 
     Ubike.prototype.search = function(site_name) {
       var station, _i, _len, _ref;

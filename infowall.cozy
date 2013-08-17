@@ -1,0 +1,66 @@
+
+Ubike = require('./ubike')
+MQueue = require('./mqueue')
+ 
+class InfoWall
+
+    constructor: () ->
+        @ubike = new Ubike.Ubike
+        @mqueues = {}
+        @diffs = {}
+        @running = false
+        @intervalid = -1
+
+    get_mqueues: () =>
+        return @mqueues
+
+    get_markers: () =>
+        return @ubike.get_markers!
+
+    construct_mqueue: (markers, cb) =>
+        for marker in markers
+            unless @mqueues[marker.name]?
+                mqueue = new MQueue.MQueue
+                @mqueues[marker.name] = mqueue
+
+            mqueue = @mqueues[marker.name]
+            mqueue.update_bike_status(marker)
+            mqueue.update_slot_status(marker)
+
+        for marker_name, mqueue of @mqueues
+            unless @diffs[marker_name]?
+                @diffs[marker_name] = {'bike': Number.MAX_VALUE, 'slot': Number.MAX_VALUE}
+
+            @diffs[marker_name]['bike'] = mqueue.mean_of_diff(mqueue.diff_bike_status!)            
+            @diffs[marker_name]['slot'] = mqueue.mean_of_diff(mqueue.diff_slot_status!)
+
+        if cb?
+            cb(@mqueues, @diffs)
+
+    update: (cb) =>
+        () <~ @ubike.request!
+            @construct_mqueue(@ubike.get_markers!, cb)
+
+    start: (cb) =>
+        unless @running
+            @intervalid = () <~ setInterval(_, 30000)
+                (mqueues, diffs) <- @update!
+                    cb(mqueues, diffs)
+            @running = true       
+
+    stop: () =>
+        if @running
+            clearInterval(@intervalid)
+            @intervalid = -1
+            @running = false
+
+# usage:
+# infowall = new InfoWall  
+# (mqueues, diffs) <- infowall.start!
+#    console.log(diffs)
+
+# () <- setTimeout(_, 300000)
+#    infowall.stop!
+ 
+exports.InfoWall = InfoWall
+ 

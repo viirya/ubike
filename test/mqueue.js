@@ -110,7 +110,7 @@
         });
       });
     });
-    return describe('#diff_bike_status()', function() {
+    describe('#diff_bike_status()', function() {
       return it('should calculate time differences for history bike status', function() {
         var MQueue, cur, mqueue, prev;
         MQueue = require('../mqueue');
@@ -128,6 +128,58 @@
         mqueue.update_bike_status(prev);
         mqueue.update_bike_status(cur);
         return assert.deepEqual(mqueue.diff_bike_status(), [1]);
+      });
+    });
+    describe('#diff_slot_status()', function() {
+      return it('should calculate time differences for history slot status', function() {
+        var MQueue, cur, mqueue, prev;
+        MQueue = require('../mqueue');
+        mqueue = new MQueue.MQueue;
+        prev = {
+          'tot': 2,
+          'sus': 32,
+          'mday': "08/16 17:42:08"
+        };
+        cur = {
+          'tot': 3,
+          'sus': 33,
+          'mday': "08/16 17:42:09"
+        };
+        mqueue.update_slot_status(prev);
+        mqueue.update_slot_status(cur);
+        return assert.deepEqual(mqueue.diff_slot_status(), [1]);
+      });
+    });
+    return describe('#mean_of_diff()', function() {
+      return it('should calculate the mean time difference for history bike/slot status', function() {
+        var MQueue, cur, mqueue, prev;
+        MQueue = require('../mqueue');
+        mqueue = new MQueue.MQueue;
+        prev = {
+          'tot': 2,
+          'sus': 30,
+          'mday': "08/16 17:42:08"
+        };
+        mqueue.update_bike_status(prev);
+        mqueue.update_slot_status(prev);
+        prev = {
+          'tot': 3,
+          'sus': 31,
+          'mday': "08/16 17:42:09"
+        };
+        mqueue.update_bike_status(prev);
+        mqueue.update_slot_status(prev);
+        cur = {
+          'tot': 4,
+          'sus': 32,
+          'mday': "08/16 17:42:11"
+        };
+        mqueue.update_bike_status(cur);
+        mqueue.update_slot_status(cur);
+        assert.deepEqual(mqueue.diff_bike_status(), [1, 2]);
+        assert.equal(mqueue.mean_of_diff(mqueue.diff_bike_status()), 1.5);
+        assert.deepEqual(mqueue.diff_slot_status(), [1, 2]);
+        return assert.equal(mqueue.mean_of_diff(mqueue.diff_slot_status()), 1.5);
       });
     });
   });

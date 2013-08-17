@@ -13,13 +13,24 @@
         return ubike.request();
       });
     });
-    return describe('#search()', function() {
+    describe('#search()', function() {
       return it('should return correct station object', function(done) {
         var Ubike, ubike;
         Ubike = require('../ubike');
         ubike = new Ubike.Ubike;
         return ubike.request(function() {
           assert.strictEqual(ubike.search('台北市政府')['name'], '台北市政府');
+          return done();
+        });
+      });
+    });
+    return describe('#get_markers()', function() {
+      return it('should return station objects', function(done) {
+        var Ubike, ubike;
+        Ubike = require('../ubike');
+        ubike = new Ubike.Ubike;
+        return ubike.request(function() {
+          assert(ubike.get_markers().length > 0);
           return done();
         });
       });

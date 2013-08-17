@@ -6,6 +6,8 @@
   MQueue = (function() {
 
     function MQueue() {
+      this.mean_of_diff = __bind(this.mean_of_diff, this);
+      this.diff_slot_status = __bind(this.diff_slot_status, this);
       this.diff_bike_status = __bind(this.diff_bike_status, this);
       this.latest_slot_status = __bind(this.latest_slot_status, this);
       this.latest_bike_status = __bind(this.latest_bike_status, this);
@@ -93,6 +95,38 @@
         }
       }
       return diff;
+    };
+
+    MQueue.prototype.diff_slot_status = function() {
+      var cur_time, diff, prev_slot, prev_time, slot, _i, _len, _ref;
+      diff = [];
+      if (this.slots.length >= 1) {
+        prev_slot = null;
+        _ref = this.slots;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          slot = _ref[_i];
+          if (prev_slot != null) {
+            prev_time = Date.parse(prev_slot.mday);
+            cur_time = Date.parse(slot.mday);
+            diff.push((cur_time - prev_time) / 1000);
+          }
+          prev_slot = slot;
+        }
+      }
+      return diff;
+    };
+
+    MQueue.prototype.mean_of_diff = function(diff) {
+      var mean;
+      mean = Number.MAX_VALUE;
+      if (diff.length > 0) {
+        mean = 0;
+        diff.forEach(function(val) {
+          return mean += val;
+        });
+        mean /= diff.length;
+      }
+      return mean;
     };
 
     return MQueue;
