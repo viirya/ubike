@@ -1,0 +1,10 @@
+
+InfoWall = require('./infowall')
+
+infowall = new InfoWall.InfoWall
+(mqueues, diffs) <- infowall.start!
+    console.log(diffs)
+
+() <- setTimeout(_, 300000)
+    infowall.stop!
+

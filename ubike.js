@@ -68,8 +68,7 @@
         });
       };
       return http.get(this.xml_source, crawler).on('error', function(e) {
-        console.log("Got error: " + e.message);
-        throw e;
+        return console.log("Got error: " + e.message);
       });
     };
 

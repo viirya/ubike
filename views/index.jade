@@ -1,0 +1,12 @@
+extends layout
+block content
+    #stations
+      ul.stations
+        li.station(ng-repeat="station in stations|filter:station_name|filter:filter_max|orderBy:predicate:reverse")  
+          span.station_name
+            站名 {{station.name}}
+          span.station_bike(ng-if="station.bike != Number.MAX_VALUE && predicate == 'bike'")
+            平均還車間隔 {{station.bike / 60}} 分鐘
+          span.station_slot(ng-if="station.slot != Number.MAX_VALUE && predicate == 'slot'")
+            平均借車間隔 {{station.slot / 60}} 分鐘
+

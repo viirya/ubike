@@ -12,16 +12,18 @@
   },
   "dependencies": {
     "underscore":"latest",
-    "cli":"latest",
     "sax":"latest",
     "line-parser":"latest",
     "prompt":"latest",
-    "mongodb":"latest",
     "lazy":"latest",
-    "natural": "latest",
     "webworker": "latest",
     "geocoder": "latest",
-    "cozy-script": "latest"
+    "cozy-script": "latest",
+    "express": "latest",
+    "jade": "0.28.1",
+    "stylus": "latest",
+    "nib": "latest",
+    "socket.io": "latest"
   },
   "devDependencies": {
     "mocha":"latest"

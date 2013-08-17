@@ -53,7 +53,7 @@ class Ubike
 
             (e) <- http.get(@xml_source, crawler).on('error', _)
                 console.log("Got error: " + e.message)
-                throw e
+                # throw e
 
 # Usage            
 # ubike = new Ubike

@@ -1,0 +1,38 @@
+
+app = angular.module('ubike-web', ['ngRoute', 'ngResource'])
+
+($scope, $resource) <- app.controller('UbikeCtrl', _)
+
+    $scope.stations = {}
+    $scope.predicate = "bike"
+    $scope.station_name = ""
+
+
+    window.update = (new_data) ->
+        #console.log('update')
+        $scope.stations = []
+        for station_name, station of new_data
+            station['name'] = station_name
+            $scope.stations.push(station)
+
+        $scope.$apply!
+
+    $scope.change = () ->
+        console.log('scope change')
+
+    $scope.filter_max = (station) ->
+        if $scope.predicate is "bike"
+            return station.bike isnt Number.MAX_VALUE
+        else
+            return station.slot isnt Number.MAX_VALUE
+        
+
+
+() <- $(document).ready!
+
+    socket = io.connect('http://cml10.csie.ntu.edu.tw:8088')
+    (data) <- socket.on('ubike', _)
+        #console.log(data)
+        window.update(data)
+
+

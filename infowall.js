@@ -73,7 +73,7 @@
           return _this.update(function(mqueues, diffs) {
             return cb(mqueues, diffs);
           });
-        }, 30000);
+        }, 60000);
         return this.running = true;
       }
     };

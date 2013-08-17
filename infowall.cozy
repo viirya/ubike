@@ -43,7 +43,7 @@ class InfoWall
 
     start: (cb) =>
         unless @running
-            @intervalid = () <~ setInterval(_, 30000)
+            @intervalid = () <~ setInterval(_, 60000)
                 (mqueues, diffs) <- @update!
                     cb(mqueues, diffs)
             @running = true       

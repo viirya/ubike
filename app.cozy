@@ -1,0 +1,55 @@
+
+express = require('express')
+stylus = require('stylus')
+nib = require('nib')
+util = require('util')
+
+InfoWall = require('./infowall')
+
+app = express()
+
+server = require('http').createServer(app)
+io = require('socket.io').listen(server)
+
+latest_diffs = {}
+socket_clients = []
+
+(socket) <- io.sockets.on('connection', _)
+    socket_clients.push(socket)
+    if latest_diffs isnt {}
+        socket.emit('ubike', latest_diffs)
+
+infowall = new InfoWall.InfoWall
+(mqueues, diffs) <- infowall.update!
+    latest_diffs = diffs
+ 
+(mqueues, diffs) <- infowall.start!
+    console.log(diffs)
+    for socket in socket_clients
+        socket.emit('ubike', diffs)
+    latest_diffs = diffs
+
+compile = (str, path) ->
+    return stylus(str).set('filename', path).use(nib())
+
+app.set('views', __dirname + '/views')
+app.set('view engine', 'jade')
+app.set('view options', { layout: false })
+app.use(express.logger())
+app.use(express.bodyParser())
+app.use(express.cookieParser())
+app.use(express.session(secret: "tweetheapmap"))
+
+app.use(stylus.middleware { src: __dirname + '/public', compile: compile})
+app.use(express.static(__dirname + '/public'))
+
+(error, req, res, next) <- app.use!
+    console.log(error)
+    res.send(500, {error: util.inspect(error)})
+
+(req, res) <- app.get('/', _)
+
+    res.render('index')        
+    
+server.listen(8088)
+
