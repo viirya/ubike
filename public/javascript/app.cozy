@@ -3,18 +3,22 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
 
 ($scope, $resource) <- app.controller('UbikeCtrl', _)
 
-    $scope.stations = {}
+    $scope.stations = []
+    $scope.markers = {}
     $scope.predicate = "bike"
     $scope.station_name = ""
 
 
-    window.update = (new_data) ->
+    window.update = (new_markers, new_diffs) ->
         #console.log('update')
         $scope.stations = []
-        for station_name, station of new_data
+        for station_name, station of new_diffs
             station['name'] = station_name
             $scope.stations.push(station)
 
+        for marker in new_markers
+            $scope.markers[marker.name] = marker
+        console.log($scope.markers)
         $scope.$apply!
 
     $scope.change = () ->
@@ -32,7 +36,10 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
 
     socket = io.connect('http://cml10.csie.ntu.edu.tw:8088')
     (data) <- socket.on('ubike', _)
-        console.log(data)
-        window.update(data)
+        markers = data[0]
+        diffs = data[1]
+        console.log(markers)
+        console.log(diffs)
+        window.update(markers, diffs)
 
 

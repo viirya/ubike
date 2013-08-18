@@ -142,6 +142,10 @@ header span {
   font-size: 28px;
   margin-right: 10px;
 }
+.main-content span.bike:hover,
+.main-content span.slot:hover {
+  color: #f00;
+}
 .main-content span.query_type {
   margin-left: 100px;
 }
@@ -152,11 +156,16 @@ header span {
 .main-content p.desc {
   font-size: 18px;
 }
+.main-content input#station_name {
+  font-size: 25px;
+}
 .main-content #stations .station_name,
 .main-content #stations .station_name_header,
 .main-content #stations .station_bike,
+.main-content #stations .station_bike_num,
 .main-content #stations .station_bike_header,
 .main-content #stations .station_slot,
+.main-content #stations .station_slot_num,
 .main-content #stations .station_slot_header {
   font-size: 25px;
   margin: 0 20px 0 0;
@@ -165,18 +174,28 @@ header span {
 }
 .main-content #stations .station_name,
 .main-content #stations .station_bike,
-.main-content #stations .station_slot {
+.main-content #stations .station_slot,
+.main-content #stations .station_bike_num,
+.main-content #stations .station_slot_num {
   float: left;
+}
+.main-content #stations .station_bike_num,
+.main-content #stations .station_slot_num {
+  text-align: right;
 }
 .main-content #stations .station_bike,
 .main-content #stations .station_slot {
-  width: 350px;
+  width: 150px;
+}
+.main-content #stations .station_bike_num,
+.main-content #stations .station_slot_num {
+  width: 50px;
 }
 .main-content #stations .station_name {
-  width: 380px;
+  width: 360px;
 }
 .main-content #stations .station {
-  margin: 20px 0 10px 0;
+  margin: 20px 0 20px 0;
 }
 .main-content #stations p.clear {
   clear: both;

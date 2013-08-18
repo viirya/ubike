@@ -5,17 +5,23 @@
   app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate']);
 
   app.controller('UbikeCtrl', function($scope, $resource) {
-    $scope.stations = {};
+    $scope.stations = [];
+    $scope.markers = {};
     $scope.predicate = "bike";
     $scope.station_name = "";
-    window.update = function(new_data) {
-      var station, station_name;
+    window.update = function(new_markers, new_diffs) {
+      var marker, station, station_name, _i, _len;
       $scope.stations = [];
-      for (station_name in new_data) {
-        station = new_data[station_name];
+      for (station_name in new_diffs) {
+        station = new_diffs[station_name];
         station['name'] = station_name;
         $scope.stations.push(station);
       }
+      for (_i = 0, _len = new_markers.length; _i < _len; _i++) {
+        marker = new_markers[_i];
+        $scope.markers[marker.name] = marker;
+      }
+      console.log($scope.markers);
       return $scope.$apply();
     };
     $scope.change = function() {
@@ -34,8 +40,12 @@
     var socket;
     socket = io.connect('http://cml10.csie.ntu.edu.tw:8088');
     return socket.on('ubike', function(data) {
-      console.log(data);
-      return window.update(data);
+      var diffs, markers;
+      markers = data[0];
+      diffs = data[1];
+      console.log(markers);
+      console.log(diffs);
+      return window.update(markers, diffs);
     });
   });
 

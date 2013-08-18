@@ -11,23 +11,27 @@ app = express()
 server = require('http').createServer(app)
 io = require('socket.io').listen(server)
 
+latest_markers = {}
 latest_diffs = {}
 socket_clients = []
 
 (socket) <- io.sockets.on('connection', _)
     socket_clients.push(socket)
-    if latest_diffs isnt {}
-        socket.emit('ubike', latest_diffs)
+    if latest_markers isnt {} and latest_diffs isnt {}
+        socket.emit('ubike', [latest_markers, latest_diffs])
 
 infowall = new InfoWall.InfoWall
 (mqueues, diffs) <- infowall.update!
+    latest_markers = infowall.get_markers!
     latest_diffs = diffs
  
 (mqueues, diffs) <- infowall.start!
     console.log(diffs)
-    for socket in socket_clients
-        socket.emit('ubike', diffs)
+    latest_markers = infowall.get_markers!
     latest_diffs = diffs
+ 
+    for socket in socket_clients
+        socket.emit('ubike', [latest_markers, latest_diffs])
 
 compile = (str, path) ->
     return stylus(str).set('filename', path).use(nib())

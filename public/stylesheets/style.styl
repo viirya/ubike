@@ -65,6 +65,10 @@ header
     font-size 28px
     margin-right 10px
 
+  span.bike:hover
+  span.slot:hover
+    color red
+
   span.query_type
     margin-left 100px
 
@@ -75,13 +79,18 @@ header
   p.desc
     font-size 18px
 
+  input#station_name
+    font-size 25px
+
   #stations
 
     .station_name
     .station_name_header
     .station_bike
+    .station_bike_num
     .station_bike_header
     .station_slot
+    .station_slot_num
     .station_slot_header
       font-size 25px
       margin 0 20px 0 0
@@ -91,17 +100,27 @@ header
     .station_name
     .station_bike
     .station_slot
+    .station_bike_num
+    .station_slot_num
       float left
 
+    .station_bike_num
+    .station_slot_num
+      text-align:right
+ 
     .station_bike
     .station_slot
-      width 350px
+      width 150px
+
+    .station_bike_num
+    .station_slot_num
+      width 50px
  
     .station_name
-      width 380px
+      width 360px
 
     .station
-      margin 20px 0 10px 0
+      margin 20px 0 20px 0
 
     p.clear
       clear both
