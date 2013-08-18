@@ -181,6 +181,10 @@ header span {
 .main-content #stations p.clear {
   clear: both;
 }
+.footer {
+  float: left;
+  height: 100px;
+}
 p {
   line-height: 1.8;
 }
