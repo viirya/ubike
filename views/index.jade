@@ -2,11 +2,22 @@ extends layout
 block content
     #stations
       ul.stations
-        li.station(ng-repeat="station in stations|filter:station_name|filter:filter_max|orderBy:predicate:reverse")  
+        li.station(ng-repeat="station in stations|filter:station_name|filter:filter_max|orderBy:predicate:reverse", ng-animate="move")  
+          span.station_name_header.label.label-info
+            站名
           span.station_name
-            站名 {{station.name}}
-          span.station_bike(ng-if="station.bike != Number.MAX_VALUE && predicate == 'bike'")
-            平均還車間隔 {{station.bike / 60}} 分鐘
-          span.station_slot(ng-if="station.slot != Number.MAX_VALUE && predicate == 'slot'")
-            平均借車間隔 {{station.slot / 60}} 分鐘
+            {{station.name}}
+          span.station_bike_header.label.label-info(ng-if="station.bike != Number.MAX_VALUE && predicate == 'bike'")
+            平均還車間隔
+          span.station_bike(ng-if="station.bike != Number.MAX_VALUE && station.bike > 0 && predicate == 'bike'")
+            {{(station.bike / 60).toFixed(2)}} 分鐘
+          span.station_bike(ng-if="station.bike == 0 && predicate == 'bike'")
+            無資料
+          span.station_slot_header.label.label-info(ng-if="station.slot != Number.MAX_VALUE && predicate == 'slot'")
+            平均借車間隔
+          span.station_slot(ng-if="station.slot != Number.MAX_VALUE && station.slot > 0 && predicate == 'slot'")
+            {{(station.slot / 60).toFixed(2)}} 分鐘
+          span.station_slot(ng-if="station.slot == 0 && predicate == 'slot'")
+            無資料
 
+          p.clear

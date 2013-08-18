@@ -1,5 +1,5 @@
 
-app = angular.module('ubike-web', ['ngRoute', 'ngResource'])
+app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
 
 ($scope, $resource) <- app.controller('UbikeCtrl', _)
 
@@ -32,7 +32,7 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource'])
 
     socket = io.connect('http://cml10.csie.ntu.edu.tw:8088')
     (data) <- socket.on('ubike', _)
-        #console.log(data)
+        console.log(data)
         window.update(data)
 
 

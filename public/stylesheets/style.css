@@ -135,10 +135,17 @@ header span {
   margin-bottom: 50px;
   font-size: 40px;
 }
-.main-content span.query_title {
+.main-content span.query_title,
+.main-content span.query_type,
+.main-content span.bike,
+.main-content span.slot {
   font-size: 28px;
   margin-right: 10px;
 }
+.main-content span.query_type {
+  margin-left: 100px;
+}
+.main-content .type,
 .main-content .query {
   margin-bottom: 50px;
 }
@@ -146,13 +153,33 @@ header span {
   font-size: 18px;
 }
 .main-content #stations .station_name,
+.main-content #stations .station_name_header,
 .main-content #stations .station_bike,
-.main-content #stations .station_slot {
+.main-content #stations .station_bike_header,
+.main-content #stations .station_slot,
+.main-content #stations .station_slot_header {
   font-size: 25px;
   margin: 0 20px 0 0;
+  padding: 10px 10px 10px 10px;
+  float: left;
+}
+.main-content #stations .station_name,
+.main-content #stations .station_bike,
+.main-content #stations .station_slot {
+  float: left;
+}
+.main-content #stations .station_bike,
+.main-content #stations .station_slot {
+  width: 350px;
+}
+.main-content #stations .station_name {
+  width: 380px;
 }
 .main-content #stations .station {
   margin: 20px 0 10px 0;
+}
+.main-content #stations p.clear {
+  clear: both;
 }
 p {
   line-height: 1.8;

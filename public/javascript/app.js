@@ -2,7 +2,7 @@
 (function() {
   var app;
 
-  app = angular.module('ubike-web', ['ngRoute', 'ngResource']);
+  app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate']);
 
   app.controller('UbikeCtrl', function($scope, $resource) {
     $scope.stations = {};
@@ -34,6 +34,7 @@
     var socket;
     socket = io.connect('http://cml10.csie.ntu.edu.tw:8088');
     return socket.on('ubike', function(data) {
+      console.log(data);
       return window.update(data);
     });
   });
