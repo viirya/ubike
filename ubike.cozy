@@ -1,6 +1,7 @@
 
 sax = require('sax')
 http = require('http')
+request = require('request')
 
 class Ubike
 
@@ -43,22 +44,17 @@ class Ubike
 
             @data = ''
 
-            crawler = (res) =>
-                #console.log("Got response: " + res.statusCode)
-                (chunk) <~ res.on('data', _)
-                    @data += chunk
-
-                () <~ res.on('end', _)
-                    @parse_xml(@data, cb)
-
-            (e) <- http.get(@xml_source, crawler).on('error', _)
-                console.log("Got error: " + e.message)
-                # throw e
+            (error, response, body) <~ request(@xml_source, _)
+                if not error and response.statusCode is 200
+                    @data = body
+                    @parse_xml(@data, cb)        
+                else
+                    console.log(error)
 
 # Usage            
 # ubike = new Ubike
 
-#() <- ubike.request!
+# () <- ubike.request!
 #    sta = ubike.search('台北市政府')
 #    console.log(sta['name'])
 

@@ -6,6 +6,12 @@ class MQueue
         @bikes = []
         @slots = []
 
+    get_bikes: () =>
+        return @bikes
+
+    get_slots: () =>
+        return @slots
+
     # greater than 0 means bikes are returned; equal 0 means no difference;
     # less than 0 means bikes are rented.
 
@@ -18,17 +24,31 @@ class MQueue
     compare_slot: (prev_station_status, cur_station_status) =>
         return cur_station_status.sus - prev_station_status.sus
 
-    append_bike_status: (cur_station_status) =>
-        @bikes.push({'tot': cur_station_status.tot, 'mday': cur_station_status.mday})
+    append_bike_status: (cur_station_status, fake = false) =>
+        if fake
+            if @bikes[@bikes.length - 1].fake?
+                @bikes[@bikes.length - 1]['mday'] = cur_station_status.mday 
+            else 
+                @bikes.push({'fake': true, 'mday': cur_station_status.mday})
+        else
+            @bikes.push({'tot': cur_station_status.tot, 'mday': cur_station_status.mday})
  
-    append_slot_status: (cur_station_status) =>
-        @slots.push({'sus': cur_station_status.sus, 'mday': cur_station_status.mday})
+    append_slot_status: (cur_station_status, fake = false) =>
+        if fake
+            if @slots[@slots.length - 1].fake?
+                @slots[@slots.length - 1]['mday'] = cur_station_status.mday
+            else
+                @slots.push({'fake': true, 'mday': cur_station_status.mday})
+        else
+            @slots.push({'sus': cur_station_status.sus, 'mday': cur_station_status.mday})
 
     # check if bike is increased. if yes, add it into queue 
     update_bike_status: (cur_station_status) =>
         if @bikes.length >= 1
             if @compare_bike(@latest_bike_status!, cur_station_status) > 0
                 @append_bike_status(cur_station_status)
+            else
+                @append_bike_status(cur_station_status, true)
         else
             @append_bike_status(cur_station_status)
 
@@ -37,18 +57,26 @@ class MQueue
         if @slots.length >= 1
             if @compare_slot(@latest_slot_status!, cur_station_status) > 0
                 @append_slot_status(cur_station_status)
+            else
+                @append_slot_status(cur_station_status, true)
         else
             @append_slot_status(cur_station_status)
- 
+
     latest_bike_status: () =>
         if @bikes.length >= 1
-            return @bikes[@bikes.length - 1]    
+                for idx in [@bikes.length - 1..0]
+                    bike = @bikes[idx]
+                    unless bike.fake?
+                        return bike
         else
             return []
 
     latest_slot_status: () =>
         if @slots.length >= 1
-            return @slots[@slots.length - 1]
+                for idx in [@slots.length - 1..0]
+                    slot = @slots[idx]
+                    unless slot.fake?
+                        return slot
         else
             return @slots
     
@@ -61,7 +89,7 @@ class MQueue
                     prev_time = Date.parse(prev_bike.mday)
                     cur_time = Date.parse(bike.mday)
                     diff.push((cur_time - prev_time) / 1000)
-            
+
                 prev_bike = bike    
 
         return diff
@@ -75,7 +103,7 @@ class MQueue
                     prev_time = Date.parse(prev_slot.mday)
                     cur_time = Date.parse(slot.mday)
                     diff.push((cur_time - prev_time) / 1000)
-            
+
                 prev_slot = slot    
 
         return diff

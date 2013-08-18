@@ -16,9 +16,19 @@
       this.append_slot_status = __bind(this.append_slot_status, this);
       this.append_bike_status = __bind(this.append_bike_status, this);
       this.compare_slot = __bind(this.compare_slot, this);
-      this.compare_bike = __bind(this.compare_bike, this);      this.bikes = [];
+      this.compare_bike = __bind(this.compare_bike, this);
+      this.get_slots = __bind(this.get_slots, this);
+      this.get_bikes = __bind(this.get_bikes, this);      this.bikes = [];
       this.slots = [];
     }
+
+    MQueue.prototype.get_bikes = function() {
+      return this.bikes;
+    };
+
+    MQueue.prototype.get_slots = function() {
+      return this.slots;
+    };
 
     MQueue.prototype.compare_bike = function(prev_station_status, cur_station_status) {
       return cur_station_status.tot - prev_station_status.tot;
@@ -28,24 +38,54 @@
       return cur_station_status.sus - prev_station_status.sus;
     };
 
-    MQueue.prototype.append_bike_status = function(cur_station_status) {
-      return this.bikes.push({
-        'tot': cur_station_status.tot,
-        'mday': cur_station_status.mday
-      });
+    MQueue.prototype.append_bike_status = function(cur_station_status, fake) {
+      if (fake == null) {
+        fake = false;
+      }
+      if (fake) {
+        if (this.bikes[this.bikes.length - 1].fake != null) {
+          return this.bikes[this.bikes.length - 1]['mday'] = cur_station_status.mday;
+        } else {
+          return this.bikes.push({
+            'fake': true,
+            'mday': cur_station_status.mday
+          });
+        }
+      } else {
+        return this.bikes.push({
+          'tot': cur_station_status.tot,
+          'mday': cur_station_status.mday
+        });
+      }
     };
 
-    MQueue.prototype.append_slot_status = function(cur_station_status) {
-      return this.slots.push({
-        'sus': cur_station_status.sus,
-        'mday': cur_station_status.mday
-      });
+    MQueue.prototype.append_slot_status = function(cur_station_status, fake) {
+      if (fake == null) {
+        fake = false;
+      }
+      if (fake) {
+        if (this.slots[this.slots.length - 1].fake != null) {
+          return this.slots[this.slots.length - 1]['mday'] = cur_station_status.mday;
+        } else {
+          return this.slots.push({
+            'fake': true,
+            'mday': cur_station_status.mday
+          });
+        }
+      } else {
+        return this.slots.push({
+          'sus': cur_station_status.sus,
+          'mday': cur_station_status.mday
+        });
+      }
     };
 
     MQueue.prototype.update_bike_status = function(cur_station_status) {
       if (this.bikes.length >= 1) {
         if (this.compare_bike(this.latest_bike_status(), cur_station_status) > 0) {
           return this.append_bike_status(cur_station_status);
+        } else {
+          return this.append_bike_status(cur_station_status, true);
         }
       } else {
         return this.append_bike_status(cur_station_status);
@@ -56,6 +96,8 @@
       if (this.slots.length >= 1) {
         if (this.compare_slot(this.latest_slot_status(), cur_station_status) > 0) {
           return this.append_slot_status(cur_station_status);
+        } else {
+          return this.append_slot_status(cur_station_status, true);
         }
       } else {
         return this.append_slot_status(cur_station_status);
@@ -63,16 +105,28 @@
     };
 
     MQueue.prototype.latest_bike_status = function() {
+      var bike, idx, _i, _ref;
       if (this.bikes.length >= 1) {
-        return this.bikes[this.bikes.length - 1];
+        for (idx = _i = _ref = this.bikes.length - 1; _ref <= 0 ? _i <= 0 : _i >= 0; idx = _ref <= 0 ? ++_i : --_i) {
+          bike = this.bikes[idx];
+          if (bike.fake == null) {
+            return bike;
+          }
+        }
       } else {
         return [];
       }
     };
 
     MQueue.prototype.latest_slot_status = function() {
+      var idx, slot, _i, _ref;
       if (this.slots.length >= 1) {
-        return this.slots[this.slots.length - 1];
+        for (idx = _i = _ref = this.slots.length - 1; _ref <= 0 ? _i <= 0 : _i >= 0; idx = _ref <= 0 ? ++_i : --_i) {
+          slot = this.slots[idx];
+          if (slot.fake == null) {
+            return slot;
+          }
+        }
       } else {
         return this.slots;
       }

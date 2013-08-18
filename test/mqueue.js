@@ -77,10 +77,21 @@
           'mday': "08/16 17:42:08"
         });
         mqueue.update_bike_status(cur);
-        return assert.deepEqual(mqueue.latest_bike_status(), {
+        assert.deepEqual(mqueue.latest_bike_status(), {
           'tot': 3,
           'mday': "08/16 17:42:09"
         });
+        cur = {
+          'tot': 3,
+          'sus': 32,
+          'mday': "08/16 17:42:10"
+        };
+        mqueue.update_bike_status(cur);
+        assert.deepEqual(mqueue.latest_bike_status(), {
+          'tot': 3,
+          'mday': "08/16 17:42:09"
+        });
+        return assert.equal(mqueue.get_bikes().length, 3);
       });
     });
     describe('#update_slot_status()', function() {
@@ -104,10 +115,21 @@
           'mday': "08/16 17:42:08"
         });
         mqueue.update_slot_status(cur);
-        return assert.deepEqual(mqueue.latest_slot_status(), {
+        assert.deepEqual(mqueue.latest_slot_status(), {
           'sus': 32,
           'mday': "08/16 17:42:09"
         });
+        cur = {
+          'tot': 3,
+          'sus': 32,
+          'mday': "08/16 17:42:10"
+        };
+        mqueue.update_slot_status(cur);
+        assert.deepEqual(mqueue.latest_slot_status(), {
+          'sus': 32,
+          'mday': "08/16 17:42:09"
+        });
+        return assert.equal(mqueue.get_slots().length, 3);
       });
     });
     describe('#diff_bike_status()', function() {
@@ -127,7 +149,14 @@
         };
         mqueue.update_bike_status(prev);
         mqueue.update_bike_status(cur);
-        return assert.deepEqual(mqueue.diff_bike_status(), [1]);
+        assert.deepEqual(mqueue.diff_bike_status(), [1]);
+        cur = {
+          'tot': 3,
+          'sus': 32,
+          'mday': "08/16 17:42:10"
+        };
+        mqueue.update_bike_status(cur);
+        return assert.deepEqual(mqueue.diff_bike_status(), [1, 1]);
       });
     });
     describe('#diff_slot_status()', function() {
@@ -147,7 +176,14 @@
         };
         mqueue.update_slot_status(prev);
         mqueue.update_slot_status(cur);
-        return assert.deepEqual(mqueue.diff_slot_status(), [1]);
+        assert.deepEqual(mqueue.diff_slot_status(), [1]);
+        cur = {
+          'tot': 3,
+          'sus': 33,
+          'mday': "08/16 17:42:10"
+        };
+        mqueue.update_slot_status(cur);
+        return assert.deepEqual(mqueue.diff_slot_status(), [1, 1]);
       });
     });
     return describe('#mean_of_diff()', function() {

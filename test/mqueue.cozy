@@ -43,6 +43,13 @@ assert = require('assert')
             assert.deepEqual(mqueue.latest_bike_status(), {'tot': 2, 'mday': "08/16 17:42:08"})
             mqueue.update_bike_status(cur)
             assert.deepEqual(mqueue.latest_bike_status(), {'tot': 3, 'mday': "08/16 17:42:09"})
+ 
+            cur = {'tot': 3, 'sus': 32, 'mday': "08/16 17:42:10"}
+
+            mqueue.update_bike_status(cur)
+            assert.deepEqual(mqueue.latest_bike_status(), {'tot': 3, 'mday': "08/16 17:42:09"})
+            assert.equal(mqueue.get_bikes!.length, 3)
+ 
 
     () <- describe('#update_slot_status()')
         () <- it('should add slot status into mqueue')
@@ -57,6 +64,13 @@ assert = require('assert')
             mqueue.update_slot_status(cur)
             assert.deepEqual(mqueue.latest_slot_status(), {'sus': 32, 'mday': "08/16 17:42:09"})
  
+            cur = {'tot': 3, 'sus': 32, 'mday': "08/16 17:42:10"}
+
+            mqueue.update_slot_status(cur)
+            assert.deepEqual(mqueue.latest_slot_status(), {'sus': 32, 'mday': "08/16 17:42:09"})
+            assert.equal(mqueue.get_slots!.length, 3)
+ 
+ 
     () <- describe('#diff_bike_status()')
         () <- it('should calculate time differences for history bike status')
             MQueue = require('../mqueue')
@@ -68,6 +82,12 @@ assert = require('assert')
             mqueue.update_bike_status(prev)
             mqueue.update_bike_status(cur)
             assert.deepEqual(mqueue.diff_bike_status!, [1])
+
+            cur = {'tot': 3, 'sus': 32, 'mday': "08/16 17:42:10"}
+
+            mqueue.update_bike_status(cur)
+            assert.deepEqual(mqueue.diff_bike_status!, [1, 1])
+ 
  
     () <- describe('#diff_slot_status()')
         () <- it('should calculate time differences for history slot status')
@@ -80,6 +100,10 @@ assert = require('assert')
             mqueue.update_slot_status(prev)
             mqueue.update_slot_status(cur)
             assert.deepEqual(mqueue.diff_slot_status!, [1])
+
+            cur = {'tot': 3, 'sus': 33, 'mday': "08/16 17:42:10"}
+            mqueue.update_slot_status(cur)
+            assert.deepEqual(mqueue.diff_slot_status!, [1, 1])
  
     () <- describe('#mean_of_diff()')
         () <- it('should calculate the mean time difference for history bike/slot status')
