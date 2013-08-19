@@ -5,7 +5,9 @@ class MQueue
     constructor: () ->
         @bikes = []
         @slots = []
-
+        @history_bike_mean = 0
+        @history_slot_mean = 0
+ 
     get_bikes: () =>
         return @bikes
 
@@ -27,18 +29,34 @@ class MQueue
     append_bike_status: (cur_station_status, fake = false) =>
         if fake
             if @bikes[@bikes.length - 1].fake?
-                @bikes[@bikes.length - 1]['mday'] = cur_station_status.mday 
+                if @slots[@slots.length - 1]['sus'] > 0 # there are slots for bikes
+                    @bikes[@bikes.length - 1]['mday'] = cur_station_status.mday 
+                    @bikes[@bikes.length - 1]['tot'] = cur_station_status.tot
+                else
+                    if @bikes[@bikes.length - 1].valley?
+                        @bikes[@bikes.length - 1]['mday'] = cur_station_status.mday 
+                        @bikes[@bikes.length - 1]['tot'] = cur_station_status.tot
+                    else
+                        @bikes.push({'valley': true, 'fake': true, 'tot': cur_station_status.tot, 'mday': cur_station_status.mday})
             else 
-                @bikes.push({'fake': true, 'mday': cur_station_status.mday})
+                @bikes.push({'fake': true, 'tot': cur_station_status.tot, 'mday': cur_station_status.mday})
         else
             @bikes.push({'tot': cur_station_status.tot, 'mday': cur_station_status.mday})
  
     append_slot_status: (cur_station_status, fake = false) =>
         if fake
             if @slots[@slots.length - 1].fake?
-                @slots[@slots.length - 1]['mday'] = cur_station_status.mday
+                if @bikes[@bikes.length - 1]['tot'] > 0 # there are bikes to rent for
+                    @slots[@slots.length - 1]['mday'] = cur_station_status.mday 
+                    @slots[@slots.length - 1]['sus'] = cur_station_status.sus
+                else
+                    if @slots[@slots.length - 1].valley?
+                        @slots[@slots.length - 1]['mday'] = cur_station_status.mday 
+                        @slots[@slots.length - 1]['sus'] = cur_station_status.sus
+                    else
+                        @slots.push({'valley': true, 'fake': true, 'sus': cur_station_status.sus, 'mday': cur_station_status.mday})
             else
-                @slots.push({'fake': true, 'mday': cur_station_status.mday})
+                @slots.push({'fake': true, 'sus': cur_station_status.sus, 'mday': cur_station_status.mday})
         else
             @slots.push({'sus': cur_station_status.sus, 'mday': cur_station_status.mday})
 
@@ -86,11 +104,15 @@ class MQueue
             prev_bike = null
             for bike in @bikes
                 if prev_bike?
-                    prev_time = Date.parse(prev_bike.mday)
-                    cur_time = Date.parse(bike.mday)
-                    diff.push((cur_time - prev_time) / 1000)
+                    unless prev_bike.fake? && bike.fake?
+                        prev_time = Date.parse(prev_bike.mday)
+                        cur_time = Date.parse(bike.mday)
+                        diff.push((cur_time - prev_time) / 1000)
 
                 prev_bike = bike    
+
+        if @bikes.length > 1000
+            @compress_bike_status!
 
         return diff
 
@@ -100,15 +122,87 @@ class MQueue
             prev_slot = null
             for slot in @slots
                 if prev_slot?
-                    prev_time = Date.parse(prev_slot.mday)
-                    cur_time = Date.parse(slot.mday)
-                    diff.push((cur_time - prev_time) / 1000)
+                    unless prev_slot.fake? && slot.fake?
+                        prev_time = Date.parse(prev_slot.mday)
+                        cur_time = Date.parse(slot.mday)
+                        diff.push((cur_time - prev_time) / 1000)
 
-                prev_slot = slot    
+                prev_slot = slot
+
+        if @slots.length > 1000
+            @compress_slot_status!    
 
         return diff
 
-    mean_of_diff: (diff) =>
+    compress_bike_status: () =>
+        history_bike_mean = @mean_of_diff(@diff_bike_status!, 'bike')
+
+        if @bikes.length >= 1
+            new_bikes = []
+            
+            for idx in [@bikes.length - 1..0]
+                bike = @bikes[idx]
+
+                if bike.fake?
+                    new_bikes.unshift(bike)
+                else
+                    if new_bikes.length > 0 # already fake bike records there
+                        bike['mday'] = @bikes[idx + 1]['mday']
+                    new_bikes.unshift(bike)
+                    break 
+
+            @bikes = new_bikes
+             
+    compress_slot_status: () =>
+        history_slot_mean = @mean_of_diff(@diff_slot_status!, 'slot')
+
+        if @slots.length >= 1
+            new_slots = []
+            
+            for idx in [@slots.length - 1..0]
+                slot = @slots[idx]
+
+                if slot.fake?
+                    new_slots.unshift(slot)
+                else
+                    if new_slots.length > 0 # already fake slot records there
+                        slot['mday'] = @slots[idx + 1]['mday']
+                    new_slots.unshift(slot)
+                    break 
+
+            @slots = new_slots
+ 
+    get_bike_valley_time: () =>
+        time = 0
+        if @bikes.length >= 1
+            prev_bike = null
+            for bike in @bikes
+                if prev_bike?
+                    if prev_bike.fake? && bike.valley?
+                        prev_time = Date.parse(prev_bike.mday)
+                        cur_time = Date.parse(bike.mday)
+                        time = (cur_time - prev_time) / 1000
+
+                prev_bike = bike    
+
+        return time
+ 
+    get_slot_valley_time: () =>
+        time = 0
+        if @slots.length >= 1
+            prev_slot = null
+            for slot in @slots
+                if prev_slot?
+                    if prev_slot.fake? && slot.valley?
+                        prev_time = Date.parse(prev_slot.mday)
+                        cur_time = Date.parse(slot.mday)
+                        time = (cur_time - prev_time) / 1000
+
+                prev_slot = slot    
+
+        return time
+ 
+    mean_of_diff: (diff, type) =>
         mean = Number.MAX_VALUE
 
         if diff.length > 0
@@ -119,8 +213,10 @@ class MQueue
 
             mean /= diff.length
 
-        return mean
-
+        if type is 'bike'
+            return mean + @history_bike_mean
+        else
+            return mean + @history_slot_mean
 
 
 exports.MQueue = MQueue

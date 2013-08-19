@@ -186,7 +186,7 @@
         return assert.deepEqual(mqueue.diff_slot_status(), [1, 1]);
       });
     });
-    return describe('#mean_of_diff()', function() {
+    describe('#mean_of_diff()', function() {
       return it('should calculate the mean time difference for history bike/slot status', function() {
         var MQueue, cur, mqueue, prev;
         MQueue = require('../mqueue');
@@ -213,9 +213,163 @@
         mqueue.update_bike_status(cur);
         mqueue.update_slot_status(cur);
         assert.deepEqual(mqueue.diff_bike_status(), [1, 2]);
-        assert.equal(mqueue.mean_of_diff(mqueue.diff_bike_status()), 1.5);
+        assert.equal(mqueue.mean_of_diff(mqueue.diff_bike_status(), 'bike'), 1.5);
         assert.deepEqual(mqueue.diff_slot_status(), [1, 2]);
-        return assert.equal(mqueue.mean_of_diff(mqueue.diff_slot_status()), 1.5);
+        return assert.equal(mqueue.mean_of_diff(mqueue.diff_slot_status(), 'slot'), 1.5);
+      });
+    });
+    describe('#get_bike_valley_time()', function() {
+      return it('should calculate time of bike valley status', function() {
+        var MQueue, event, mqueue;
+        MQueue = require('../mqueue');
+        mqueue = new MQueue.MQueue;
+        event = {
+          'tot': 2,
+          'sus': 32,
+          'mday': "08/16 17:42:08"
+        };
+        mqueue.update_bike_status(event);
+        event = {
+          'tot': 3,
+          'sus': 32,
+          'mday': "08/16 17:42:09"
+        };
+        mqueue.update_bike_status(event);
+        assert.deepEqual(mqueue.diff_bike_status(), [1]);
+        event = {
+          'tot': 3,
+          'sus': 32,
+          'mday': "08/16 17:42:10"
+        };
+        mqueue.update_bike_status(event);
+        assert.deepEqual(mqueue.diff_bike_status(), [1, 1]);
+        event = {
+          'tot': 3,
+          'sus': 0,
+          'mday': "08/16 17:42:11"
+        };
+        mqueue.update_slot_status(event);
+        event = {
+          'tot': 3,
+          'sus': 0,
+          'mday': "08/16 17:42:11"
+        };
+        mqueue.update_bike_status(event);
+        assert.deepEqual(mqueue.diff_bike_status(), [1, 1]);
+        return assert.equal(mqueue.get_bike_valley_time(), 1);
+      });
+    });
+    describe('#get_slot_valley_time()', function() {
+      return it('should calculate time of slot valley status', function() {
+        var MQueue, event, mqueue;
+        MQueue = require('../mqueue');
+        mqueue = new MQueue.MQueue;
+        event = {
+          'tot': 2,
+          'sus': 32,
+          'mday': "08/16 17:42:08"
+        };
+        mqueue.update_slot_status(event);
+        event = {
+          'tot': 2,
+          'sus': 33,
+          'mday': "08/16 17:42:09"
+        };
+        mqueue.update_slot_status(event);
+        assert.deepEqual(mqueue.diff_slot_status(), [1]);
+        event = {
+          'tot': 2,
+          'sus': 33,
+          'mday': "08/16 17:42:10"
+        };
+        mqueue.update_slot_status(event);
+        assert.deepEqual(mqueue.diff_slot_status(), [1, 1]);
+        event = {
+          'tot': 0,
+          'sus': 33,
+          'mday': "08/16 17:42:11"
+        };
+        mqueue.update_bike_status(event);
+        event = {
+          'tot': 0,
+          'sus': 33,
+          'mday': "08/16 17:42:11"
+        };
+        mqueue.update_slot_status(event);
+        assert.deepEqual(mqueue.diff_slot_status(), [1, 1]);
+        return assert.equal(mqueue.get_slot_valley_time(), 1);
+      });
+    });
+    describe('#compress_bike_status()', function() {
+      return it('should reduce history bike status', function() {
+        var MQueue, cur, mqueue, prev;
+        MQueue = require('../mqueue');
+        mqueue = new MQueue.MQueue;
+        prev = {
+          'tot': 2,
+          'sus': 32,
+          'mday': "08/16 17:42:08"
+        };
+        cur = {
+          'tot': 3,
+          'sus': 32,
+          'mday': "08/16 17:42:09"
+        };
+        mqueue.update_bike_status(prev);
+        mqueue.update_bike_status(cur);
+        cur = {
+          'tot': 3,
+          'sus': 32,
+          'mday': "08/16 17:42:10"
+        };
+        mqueue.update_bike_status(cur);
+        mqueue.compress_bike_status();
+        return assert.deepEqual(mqueue.get_bikes(), [
+          {
+            'tot': 3,
+            'mday': "08/16 17:42:10"
+          }, {
+            'fake': true,
+            'tot': 3,
+            'mday': '08/16 17:42:10'
+          }
+        ]);
+      });
+    });
+    return describe('#compress_slot_status()', function() {
+      return it('should reduce history slot status', function() {
+        var MQueue, cur, mqueue, prev;
+        MQueue = require('../mqueue');
+        mqueue = new MQueue.MQueue;
+        prev = {
+          'tot': 2,
+          'sus': 32,
+          'mday': "08/16 17:42:08"
+        };
+        cur = {
+          'tot': 3,
+          'sus': 33,
+          'mday': "08/16 17:42:09"
+        };
+        mqueue.update_slot_status(prev);
+        mqueue.update_slot_status(cur);
+        cur = {
+          'tot': 3,
+          'sus': 33,
+          'mday': "08/16 17:42:10"
+        };
+        mqueue.update_slot_status(cur);
+        mqueue.compress_slot_status();
+        return assert.deepEqual(mqueue.get_slots(), [
+          {
+            'sus': 33,
+            'mday': "08/16 17:42:10"
+          }, {
+            'fake': true,
+            'sus': 33,
+            'mday': '08/16 17:42:10'
+          }
+        ]);
       });
     });
   });

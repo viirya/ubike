@@ -38,8 +38,8 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
     (data) <- socket.on('ubike', _)
         markers = data[0]
         diffs = data[1]
-        console.log(markers)
-        console.log(diffs)
+        #console.log(markers)
+        #console.log(diffs)
         window.update(markers, diffs)
 
 

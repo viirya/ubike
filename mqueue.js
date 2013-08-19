@@ -7,6 +7,10 @@
 
     function MQueue() {
       this.mean_of_diff = __bind(this.mean_of_diff, this);
+      this.get_slot_valley_time = __bind(this.get_slot_valley_time, this);
+      this.get_bike_valley_time = __bind(this.get_bike_valley_time, this);
+      this.compress_slot_status = __bind(this.compress_slot_status, this);
+      this.compress_bike_status = __bind(this.compress_bike_status, this);
       this.diff_slot_status = __bind(this.diff_slot_status, this);
       this.diff_bike_status = __bind(this.diff_bike_status, this);
       this.latest_slot_status = __bind(this.latest_slot_status, this);
@@ -20,6 +24,8 @@
       this.get_slots = __bind(this.get_slots, this);
       this.get_bikes = __bind(this.get_bikes, this);      this.bikes = [];
       this.slots = [];
+      this.history_bike_mean = 0;
+      this.history_slot_mean = 0;
     }
 
     MQueue.prototype.get_bikes = function() {
@@ -44,10 +50,26 @@
       }
       if (fake) {
         if (this.bikes[this.bikes.length - 1].fake != null) {
-          return this.bikes[this.bikes.length - 1]['mday'] = cur_station_status.mday;
+          if (this.slots[this.slots.length - 1]['sus'] > 0) {
+            this.bikes[this.bikes.length - 1]['mday'] = cur_station_status.mday;
+            return this.bikes[this.bikes.length - 1]['tot'] = cur_station_status.tot;
+          } else {
+            if (this.bikes[this.bikes.length - 1].valley != null) {
+              this.bikes[this.bikes.length - 1]['mday'] = cur_station_status.mday;
+              return this.bikes[this.bikes.length - 1]['tot'] = cur_station_status.tot;
+            } else {
+              return this.bikes.push({
+                'valley': true,
+                'fake': true,
+                'tot': cur_station_status.tot,
+                'mday': cur_station_status.mday
+              });
+            }
+          }
         } else {
           return this.bikes.push({
             'fake': true,
+            'tot': cur_station_status.tot,
             'mday': cur_station_status.mday
           });
         }
@@ -65,10 +87,26 @@
       }
       if (fake) {
         if (this.slots[this.slots.length - 1].fake != null) {
-          return this.slots[this.slots.length - 1]['mday'] = cur_station_status.mday;
+          if (this.bikes[this.bikes.length - 1]['tot'] > 0) {
+            this.slots[this.slots.length - 1]['mday'] = cur_station_status.mday;
+            return this.slots[this.slots.length - 1]['sus'] = cur_station_status.sus;
+          } else {
+            if (this.slots[this.slots.length - 1].valley != null) {
+              this.slots[this.slots.length - 1]['mday'] = cur_station_status.mday;
+              return this.slots[this.slots.length - 1]['sus'] = cur_station_status.sus;
+            } else {
+              return this.slots.push({
+                'valley': true,
+                'fake': true,
+                'sus': cur_station_status.sus,
+                'mday': cur_station_status.mday
+              });
+            }
+          }
         } else {
           return this.slots.push({
             'fake': true,
+            'sus': cur_station_status.sus,
             'mday': cur_station_status.mday
           });
         }
@@ -141,12 +179,17 @@
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           bike = _ref[_i];
           if (prev_bike != null) {
-            prev_time = Date.parse(prev_bike.mday);
-            cur_time = Date.parse(bike.mday);
-            diff.push((cur_time - prev_time) / 1000);
+            if (!((prev_bike.fake != null) && (bike.fake != null))) {
+              prev_time = Date.parse(prev_bike.mday);
+              cur_time = Date.parse(bike.mday);
+              diff.push((cur_time - prev_time) / 1000);
+            }
           }
           prev_bike = bike;
         }
+      }
+      if (this.bikes.length > 1000) {
+        this.compress_bike_status();
       }
       return diff;
     };
@@ -160,17 +203,106 @@
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           slot = _ref[_i];
           if (prev_slot != null) {
-            prev_time = Date.parse(prev_slot.mday);
-            cur_time = Date.parse(slot.mday);
-            diff.push((cur_time - prev_time) / 1000);
+            if (!((prev_slot.fake != null) && (slot.fake != null))) {
+              prev_time = Date.parse(prev_slot.mday);
+              cur_time = Date.parse(slot.mday);
+              diff.push((cur_time - prev_time) / 1000);
+            }
           }
           prev_slot = slot;
         }
       }
+      if (this.slots.length > 1000) {
+        this.compress_slot_status();
+      }
       return diff;
     };
 
-    MQueue.prototype.mean_of_diff = function(diff) {
+    MQueue.prototype.compress_bike_status = function() {
+      var bike, history_bike_mean, idx, new_bikes, _i, _ref;
+      history_bike_mean = this.mean_of_diff(this.diff_bike_status(), 'bike');
+      if (this.bikes.length >= 1) {
+        new_bikes = [];
+        for (idx = _i = _ref = this.bikes.length - 1; _ref <= 0 ? _i <= 0 : _i >= 0; idx = _ref <= 0 ? ++_i : --_i) {
+          bike = this.bikes[idx];
+          if (bike.fake != null) {
+            new_bikes.unshift(bike);
+          } else {
+            if (new_bikes.length > 0) {
+              bike['mday'] = this.bikes[idx + 1]['mday'];
+            }
+            new_bikes.unshift(bike);
+            break;
+          }
+        }
+        return this.bikes = new_bikes;
+      }
+    };
+
+    MQueue.prototype.compress_slot_status = function() {
+      var history_slot_mean, idx, new_slots, slot, _i, _ref;
+      history_slot_mean = this.mean_of_diff(this.diff_slot_status(), 'slot');
+      if (this.slots.length >= 1) {
+        new_slots = [];
+        for (idx = _i = _ref = this.slots.length - 1; _ref <= 0 ? _i <= 0 : _i >= 0; idx = _ref <= 0 ? ++_i : --_i) {
+          slot = this.slots[idx];
+          if (slot.fake != null) {
+            new_slots.unshift(slot);
+          } else {
+            if (new_slots.length > 0) {
+              slot['mday'] = this.slots[idx + 1]['mday'];
+            }
+            new_slots.unshift(slot);
+            break;
+          }
+        }
+        return this.slots = new_slots;
+      }
+    };
+
+    MQueue.prototype.get_bike_valley_time = function() {
+      var bike, cur_time, prev_bike, prev_time, time, _i, _len, _ref;
+      time = 0;
+      if (this.bikes.length >= 1) {
+        prev_bike = null;
+        _ref = this.bikes;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          bike = _ref[_i];
+          if (prev_bike != null) {
+            if ((prev_bike.fake != null) && (bike.valley != null)) {
+              prev_time = Date.parse(prev_bike.mday);
+              cur_time = Date.parse(bike.mday);
+              time = (cur_time - prev_time) / 1000;
+            }
+          }
+          prev_bike = bike;
+        }
+      }
+      return time;
+    };
+
+    MQueue.prototype.get_slot_valley_time = function() {
+      var cur_time, prev_slot, prev_time, slot, time, _i, _len, _ref;
+      time = 0;
+      if (this.slots.length >= 1) {
+        prev_slot = null;
+        _ref = this.slots;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          slot = _ref[_i];
+          if (prev_slot != null) {
+            if ((prev_slot.fake != null) && (slot.valley != null)) {
+              prev_time = Date.parse(prev_slot.mday);
+              cur_time = Date.parse(slot.mday);
+              time = (cur_time - prev_time) / 1000;
+            }
+          }
+          prev_slot = slot;
+        }
+      }
+      return time;
+    };
+
+    MQueue.prototype.mean_of_diff = function(diff, type) {
       var mean;
       mean = Number.MAX_VALUE;
       if (diff.length > 0) {
@@ -180,7 +312,11 @@
         });
         mean /= diff.length;
       }
-      return mean;
+      if (type === 'bike') {
+        return mean + this.history_bike_mean;
+      } else {
+        return mean + this.history_slot_mean;
+      }
     };
 
     return MQueue;

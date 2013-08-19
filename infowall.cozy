@@ -31,8 +31,8 @@ class InfoWall
             unless @diffs[marker_name]?
                 @diffs[marker_name] = {'bike': Number.MAX_VALUE, 'slot': Number.MAX_VALUE}
 
-            @diffs[marker_name]['bike'] = mqueue.mean_of_diff(mqueue.diff_bike_status!)            
-            @diffs[marker_name]['slot'] = mqueue.mean_of_diff(mqueue.diff_slot_status!)
+            @diffs[marker_name]['bike'] = mqueue.mean_of_diff(mqueue.diff_bike_status!, 'bike')            
+            @diffs[marker_name]['slot'] = mqueue.mean_of_diff(mqueue.diff_slot_status!, 'slot')
 
         if cb?
             cb(@mqueues, @diffs)

@@ -43,8 +43,6 @@
       var diffs, markers;
       markers = data[0];
       diffs = data[1];
-      console.log(markers);
-      console.log(diffs);
       return window.update(markers, diffs);
     });
   });

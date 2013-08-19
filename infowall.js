@@ -51,8 +51,8 @@
             'slot': Number.MAX_VALUE
           };
         }
-        this.diffs[marker_name]['bike'] = mqueue.mean_of_diff(mqueue.diff_bike_status());
-        this.diffs[marker_name]['slot'] = mqueue.mean_of_diff(mqueue.diff_slot_status());
+        this.diffs[marker_name]['bike'] = mqueue.mean_of_diff(mqueue.diff_bike_status(), 'bike');
+        this.diffs[marker_name]['slot'] = mqueue.mean_of_diff(mqueue.diff_slot_status(), 'slot');
       }
       if (cb != null) {
         return cb(this.mqueues, this.diffs);
