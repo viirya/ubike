@@ -18,6 +18,7 @@
       this.get_mqueues = __bind(this.get_mqueues, this);      this.ubike = new Ubike.Ubike;
       this.mqueues = {};
       this.diffs = {};
+      this.valley_time = {};
       this.running = false;
       this.intervalid = -1;
     }
@@ -53,9 +54,17 @@
         }
         this.diffs[marker_name]['bike'] = mqueue.mean_of_diff(mqueue.diff_bike_status(), 'bike');
         this.diffs[marker_name]['slot'] = mqueue.mean_of_diff(mqueue.diff_slot_status(), 'slot');
+        if (this.valley_time[marker_name] == null) {
+          this.valley_time[marker_name] = {
+            'bike': 0,
+            'slot': 0
+          };
+        }
+        this.valley_time[marker_name]['bike'] = mqueue.get_bike_valley_time();
+        this.valley_time[marker_name]['slot'] = mqueue.get_slot_valley_time();
       }
       if (cb != null) {
-        return cb(this.mqueues, this.diffs);
+        return cb(this.mqueues, this.diffs, this.valley_time);
       }
     };
 
@@ -70,8 +79,8 @@
       var _this = this;
       if (!this.running) {
         this.intervalid = setInterval(function() {
-          return _this.update(function(mqueues, diffs) {
-            return cb(mqueues, diffs);
+          return _this.update(function(mqueues, diffs, valley_time) {
+            return cb(mqueues, diffs, valley_time);
           });
         }, 60000);
         return this.running = true;

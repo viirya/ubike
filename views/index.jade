@@ -9,10 +9,12 @@ block content
             {{station.name}}
           span.station_bike_header.label.label-info(ng-if="station.bike != Number.MAX_VALUE && predicate == 'bike'")
             平均還車間隔
-          span.station_bike(ng-if="station.bike != Number.MAX_VALUE && station.bike > 0 && predicate == 'bike'")
+          span.station_bike(ng-if="station.bike != Number.MAX_VALUE && station.bike > 0 && predicate == 'bike' && markers[station.name]['sus'] != '0'")
             {{(station.bike / 60).toFixed(2)}} 分鐘
-          span.station_bike(ng-if="station.bike == 0 && predicate == 'bike'")
+          span.station_bike(ng-if="station.bike == 0 && predicate == 'bike' && markers[station.name]['sus'] != '0'")
             無資料
+          span.station_bike.label.label-warning(ng-if="predicate == 'bike' && markers[station.name]['sus'] == '0'")
+            已無車位
           span.station_bike_header.label.label-info(ng-if="markers[station.name]['tot'] != '0' && predicate == 'bike'")
             車輛
           span.station_bike_num(ng-if="markers[station.name]['tot'] != '0' && predicate == 'bike'")
@@ -21,16 +23,17 @@ block content
             無車輛
           span.station_slot_header.label.label-info(ng-if="station.slot != Number.MAX_VALUE && predicate == 'slot'")
             平均借車間隔
-          span.station_slot(ng-if="station.slot != Number.MAX_VALUE && station.slot > 0 && predicate == 'slot'")
+          span.station_slot(ng-if="station.slot != Number.MAX_VALUE && station.slot > 0 && predicate == 'slot' && markers[station.name]['tot'] != '0'")
             {{(station.slot / 60).toFixed(2)}} 分鐘
-          span.station_slot(ng-if="station.slot == 0 && predicate == 'slot'")
+          span.station_slot(ng-if="station.slot == 0 && predicate == 'slot' && markers[station.name]['tot'] != '0'")
             無資料
+          span.station_slot.label.label-warning(ng-if="predicate == 'slot' && markers[station.name]['tot'] == '0'")
+            已無車輛
           span.station_slot_header.label.label-info(ng-if="markers[station.name]['sus'] != '0' && predicate == 'slot'")
             車位
           span.station_slot_num(ng-if="markers[station.name]['sus'] != '0' && predicate == 'slot'")
             {{markers[station.name]['sus']}}
           span.station_slot_header.label.label-warning(ng-if="markers[station.name]['sus'] == '0' && predicate == 'slot'")
             無車位
-          
 
           p.clear

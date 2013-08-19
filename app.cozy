@@ -13,25 +13,27 @@ io = require('socket.io').listen(server)
 
 latest_markers = {}
 latest_diffs = {}
+latest_valley_time = {}
 socket_clients = []
 
 (socket) <- io.sockets.on('connection', _)
     socket_clients.push(socket)
     if latest_markers isnt {} and latest_diffs isnt {}
-        socket.emit('ubike', [latest_markers, latest_diffs])
+        socket.emit('ubike', [latest_markers, latest_diffs, latest_valley_time])
 
 infowall = new InfoWall.InfoWall
-(mqueues, diffs) <- infowall.update!
+(mqueues, diffs, valley_time) <- infowall.update!
     latest_markers = infowall.get_markers!
     latest_diffs = diffs
+    latest_valley_time = valley_time
  
-(mqueues, diffs) <- infowall.start!
-    console.log(diffs)
+(mqueues, diffs, valley_time) <- infowall.start!
     latest_markers = infowall.get_markers!
     latest_diffs = diffs
- 
+    latest_valley_time = valley_time 
+
     for socket in socket_clients
-        socket.emit('ubike', [latest_markers, latest_diffs])
+        socket.emit('ubike', [latest_markers, latest_diffs, latest_valley_time])
 
 compile = (str, path) ->
     return stylus(str).set('filename', path).use(nib())

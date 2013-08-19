@@ -5,11 +5,12 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
 
     $scope.stations = []
     $scope.markers = {}
+    $scope.valley_time = {}
     $scope.predicate = "bike"
     $scope.station_name = ""
 
 
-    window.update = (new_markers, new_diffs) ->
+    window.update = (new_markers, new_diffs, new_valley_time) ->
         #console.log('update')
         $scope.stations = []
         for station_name, station of new_diffs
@@ -18,7 +19,10 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
 
         for marker in new_markers
             $scope.markers[marker.name] = marker
-        console.log($scope.markers)
+        #console.log($scope.markers)
+
+        $scope.valley_time = new_valley_time
+
         $scope.$apply!
 
     $scope.change = () ->
@@ -38,8 +42,10 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
     (data) <- socket.on('ubike', _)
         markers = data[0]
         diffs = data[1]
+        valley_time = data[2]
         #console.log(markers)
         #console.log(diffs)
-        window.update(markers, diffs)
+        #console.log(valley_time)
+        window.update(markers, diffs, valley_time)
 
 

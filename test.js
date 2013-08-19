@@ -6,8 +6,8 @@
 
   infowall = new InfoWall.InfoWall;
 
-  infowall.start(function(mqueues, diffs) {
-    return console.log(diffs);
+  infowall.start(function(mqueues, diffs, valley_time) {
+    return console.log(valley_time);
   });
 
   setTimeout(function() {

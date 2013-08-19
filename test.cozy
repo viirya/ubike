@@ -2,8 +2,8 @@
 InfoWall = require('./infowall')
 
 infowall = new InfoWall.InfoWall
-(mqueues, diffs) <- infowall.start!
-    console.log(diffs)
+(mqueues, diffs, valley_time) <- infowall.start!
+    console.log(valley_time)
 
 () <- setTimeout(_, 300000)
     infowall.stop!

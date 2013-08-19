@@ -8,6 +8,7 @@ class InfoWall
         @ubike = new Ubike.Ubike
         @mqueues = {}
         @diffs = {}
+        @valley_time = {}
         @running = false
         @intervalid = -1
 
@@ -34,8 +35,14 @@ class InfoWall
             @diffs[marker_name]['bike'] = mqueue.mean_of_diff(mqueue.diff_bike_status!, 'bike')            
             @diffs[marker_name]['slot'] = mqueue.mean_of_diff(mqueue.diff_slot_status!, 'slot')
 
+            unless @valley_time[marker_name]?
+                @valley_time[marker_name] = {'bike': 0, 'slot': 0}
+
+            @valley_time[marker_name]['bike'] = mqueue.get_bike_valley_time!
+            @valley_time[marker_name]['slot'] = mqueue.get_slot_valley_time!
+
         if cb?
-            cb(@mqueues, @diffs)
+            cb(@mqueues, @diffs, @valley_time)
 
     update: (cb) =>
         () <~ @ubike.request!
@@ -44,8 +51,8 @@ class InfoWall
     start: (cb) =>
         unless @running
             @intervalid = () <~ setInterval(_, 60000)
-                (mqueues, diffs) <- @update!
-                    cb(mqueues, diffs)
+                (mqueues, diffs, valley_time) <- @update!
+                    cb(mqueues, diffs, valley_time)
             @running = true       
 
     stop: () =>

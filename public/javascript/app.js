@@ -7,9 +7,10 @@
   app.controller('UbikeCtrl', function($scope, $resource) {
     $scope.stations = [];
     $scope.markers = {};
+    $scope.valley_time = {};
     $scope.predicate = "bike";
     $scope.station_name = "";
-    window.update = function(new_markers, new_diffs) {
+    window.update = function(new_markers, new_diffs, new_valley_time) {
       var marker, station, station_name, _i, _len;
       $scope.stations = [];
       for (station_name in new_diffs) {
@@ -21,7 +22,7 @@
         marker = new_markers[_i];
         $scope.markers[marker.name] = marker;
       }
-      console.log($scope.markers);
+      $scope.valley_time = new_valley_time;
       return $scope.$apply();
     };
     $scope.change = function() {
@@ -40,10 +41,11 @@
     var socket;
     socket = io.connect('http://cml10.csie.ntu.edu.tw:8088');
     return socket.on('ubike', function(data) {
-      var diffs, markers;
+      var diffs, markers, valley_time;
       markers = data[0];
       diffs = data[1];
-      return window.update(markers, diffs);
+      valley_time = data[2];
+      return window.update(markers, diffs, valley_time);
     });
   });
 
