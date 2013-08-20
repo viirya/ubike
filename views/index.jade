@@ -1,12 +1,17 @@
 extends layout
+block infobox
+    #mapinfobox(style="height: 200px; width: 200px")
+      span.station_name(ng-show="current_station_name != ''", style="font-size:20px; padding-top:50px;")
+        站名
+
 block content
     #stations
       ul.stations
         li.station(ng-repeat="station in stations|filter:station_name|filter:filter_max|orderBy:predicate:reverse", ng-animate="move")  
           span.station_name_header.label.label-info
             站名
-          span.station_name
-            {{station.name}}
+          span.station_name(ng-click="click_station(station.name)")
+            a.fancybox(href="#map-canvas"){{station.name}}
           span.station_bike_header.label.label-info(ng-if="station.bike != Number.MAX_VALUE && predicate == 'bike'")
             平均還車間隔
           span.station_bike(ng-if="station.bike != Number.MAX_VALUE && station.bike > 0 && predicate == 'bike' && markers[station.name]['sus'] != '0'")

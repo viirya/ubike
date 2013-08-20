@@ -6,6 +6,7 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
     $scope.stations = []
     $scope.markers = {}
     $scope.valley_time = {}
+    $scope.current_station_name = ""
     $scope.predicate = "bike"
     $scope.station_name = ""
 
@@ -33,10 +34,64 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
             return station.bike isnt Number.MAX_VALUE
         else
             return station.slot isnt Number.MAX_VALUE
-        
 
+    $scope.click_station = (station) ->
+        marker = $scope.markers[station]
 
+        lat = marker['lat']
+        lng = marker['lng']
+        #window.map.put_marker(lat, lng)
+        window.map.set_center(lat, lng)
+        $scope.current_station_name = station
+
+class UbikeMap
+
+    constructor: (map_element_id) ->
+        latlng = new google.maps.LatLng(-25.363882,131.044922)
+        mapOptions =
+            zoom: 17,
+            center: latlng,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+
+        @map = new google.maps.Map(document.getElementById(map_element_id), mapOptions)
+        @markers = []
+        @infowindow = new google.maps.InfoWindow!
+
+    setzoom: (level) =>
+        @map.setZoom(level)
+
+    redraw: () =>
+        console.log('redraw')
+        google.maps.event.trigger(@map, 'resize')
+
+    get_markers: () =>
+        return @markers
+
+    set_center: (lat, lng) =>
+        newlatlng = new google.maps.LatLng(lat, lng)
+        @map.setCenter(newlatlng)
+ 
+    put_marker: (lat, lng, name) =>
+        newlatlng = new google.maps.LatLng(lat, lng)
+        marker = new google.maps.Marker(
+          position: newlatlng,
+          map: @map,
+          icon:
+            url: 'images/bike.png',
+            scaledSize: new google.maps.Size(50, 50)
+        )
+
+        @markers.push(marker)
+
+        () <~ google.maps.event.addListener(marker, 'click', _)
+            $('#mapinfobox > span').text(name)
+            @infowindow.setContent($('.infobox').html!)
+            @infowindow.open(@map, marker)
+ 
 () <- $(document).ready!
+
+
+    window.current_marker = null
 
     socket = io.connect('http://cml10.csie.ntu.edu.tw:8088')
     (data) <- socket.on('ubike', _)
@@ -47,5 +102,16 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
         #console.log(diffs)
         #console.log(valley_time)
         window.update(markers, diffs, valley_time)
+
+        if window.map.get_markers!.length != markers.length
+            (marker) <- markers.forEach!
+                window.map.put_marker(marker.lat, marker.lng, marker.name)
+
+
+    window.map = new UbikeMap('map-canvas')
+
+    $(".fancybox").fancybox!
+
+
 
 
