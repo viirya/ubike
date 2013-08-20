@@ -42,8 +42,11 @@
       marker = $scope.markers[station];
       lat = marker['lat'];
       lng = marker['lng'];
-      window.map.set_center(lat, lng);
-      return $scope.current_station_name = station;
+      $scope.current_station_name = station;
+      return window.setTimeout(function() {
+        window.map.set_center(lat, lng);
+        return window.map.show_info(station);
+      }, 500);
     };
   });
 
@@ -51,6 +54,7 @@
 
     function UbikeMap(map_element_id) {
       this.put_marker = __bind(this.put_marker, this);
+      this.show_info = __bind(this.show_info, this);
       this.set_center = __bind(this.set_center, this);
       this.get_markers = __bind(this.get_markers, this);
       this.redraw = __bind(this.redraw, this);
@@ -63,7 +67,7 @@
         mapTypeId: google.maps.MapTypeId.ROADMAP
       };
       this.map = new google.maps.Map(document.getElementById(map_element_id), mapOptions);
-      this.markers = [];
+      this.markers = {};
       this.infowindow = new google.maps.InfoWindow();
     }
 
@@ -86,6 +90,16 @@
       return this.map.setCenter(newlatlng);
     };
 
+    UbikeMap.prototype.show_info = function(name) {
+      var marker;
+      if (this.markers[name] != null) {
+        marker = this.markers[name];
+        $('#mapinfobox > span').text(name);
+        this.infowindow.setContent($('.infobox').html());
+        return this.infowindow.open(this.map, marker);
+      }
+    };
+
     UbikeMap.prototype.put_marker = function(lat, lng, name) {
       var marker, newlatlng,
         _this = this;
@@ -98,7 +112,7 @@
           scaledSize: new google.maps.Size(50, 50)
         }
       });
-      this.markers.push(marker);
+      this.markers[name] = marker;
       return google.maps.event.addListener(marker, 'click', function() {
         $('#mapinfobox > span').text(name);
         _this.infowindow.setContent($('.infobox').html());
@@ -120,7 +134,7 @@
       diffs = data[1];
       valley_time = data[2];
       window.update(markers, diffs, valley_time);
-      if (window.map.get_markers().length !== markers.length) {
+      if (Object.keys(window.map.get_markers()).length !== markers.length) {
         return markers.forEach(function(marker) {
           return window.map.put_marker(marker.lat, marker.lng, marker.name);
         });

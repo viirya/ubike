@@ -41,8 +41,12 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
         lat = marker['lat']
         lng = marker['lng']
         #window.map.put_marker(lat, lng)
-        window.map.set_center(lat, lng)
         $scope.current_station_name = station
+
+        () <- window.setTimeout(_, 500)
+            window.map.set_center(lat, lng)
+            window.map.show_info(station)
+ 
 
 class UbikeMap
 
@@ -54,7 +58,7 @@ class UbikeMap
             mapTypeId: google.maps.MapTypeId.ROADMAP
 
         @map = new google.maps.Map(document.getElementById(map_element_id), mapOptions)
-        @markers = []
+        @markers = {}
         @infowindow = new google.maps.InfoWindow!
 
     setzoom: (level) =>
@@ -70,6 +74,13 @@ class UbikeMap
     set_center: (lat, lng) =>
         newlatlng = new google.maps.LatLng(lat, lng)
         @map.setCenter(newlatlng)
+
+    show_info: (name) =>
+        if @markers[name]?
+            marker = @markers[name]
+            $('#mapinfobox > span').text(name)
+            @infowindow.setContent($('.infobox').html!)
+            @infowindow.open(@map, marker)
  
     put_marker: (lat, lng, name) =>
         newlatlng = new google.maps.LatLng(lat, lng)
@@ -81,7 +92,7 @@ class UbikeMap
             scaledSize: new google.maps.Size(50, 50)
         )
 
-        @markers.push(marker)
+        @markers[name] = marker
 
         () <~ google.maps.event.addListener(marker, 'click', _)
             $('#mapinfobox > span').text(name)
@@ -103,7 +114,7 @@ class UbikeMap
         #console.log(valley_time)
         window.update(markers, diffs, valley_time)
 
-        if window.map.get_markers!.length != markers.length
+        if Object.keys(window.map.get_markers!).length != markers.length
             (marker) <- markers.forEach!
                 window.map.put_marker(marker.lat, marker.lng, marker.name)
 
