@@ -220,6 +220,12 @@ header span {
 .main-content .infobox #mapinfobox span {
   margin-top: 50px;
 }
+.main-content a {
+  color: #444;
+}
+.main-content a:hover {
+  color: #f00;
+}
 .footer {
   float: left;
   height: 100px;
