@@ -43,9 +43,8 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
         #window.map.put_marker(lat, lng)
         $scope.current_station_name = station
 
-        () <- window.setTimeout(_, 500)
-            window.map.set_center(lat, lng)
-            window.map.show_info(station)
+        window.map.set_center(lat, lng)
+        #window.map.show_info(station)
  
 
 class UbikeMap
@@ -75,12 +74,15 @@ class UbikeMap
         newlatlng = new google.maps.LatLng(lat, lng)
         @map.setCenter(newlatlng)
 
-    show_info: (name) =>
+    show_info: (name, html) =>
         if @markers[name]?
             marker = @markers[name]
-            $('#mapinfobox > span').text(name)
-            @infowindow.setContent($('.infobox').html!)
-            @infowindow.open(@map, marker)
+
+            html = "<div class='infoboxonmap'><span class='info'>#{name}</span></div>"
+
+            () <~ google.maps.event.addListener(marker, 'mouseover', _)
+                @infowindow.setContent(html)
+                @infowindow.open(@map, marker)
  
     put_marker: (lat, lng, name) =>
         newlatlng = new google.maps.LatLng(lat, lng)
@@ -94,10 +96,45 @@ class UbikeMap
 
         @markers[name] = marker
 
+        modify_info = () ->
+
+            station = window.diffs[name]
+            station_marker = null
+            for marker_itr in window.markers
+                if marker_itr.name is name
+                    station_marker = marker_itr
+ 
+            $('#mapinfobox > span.station_name_info').text(name)
+            $('#mapinfobox > span.station_tot_info').text('車輛：' + station_marker['tot'])
+            $('#mapinfobox > span.station_sus_info').text('車位：' + station_marker['sus'])
+ 
+    
+            if station.bike != Number.MAX_VALUE && station.bike > 0 && station_marker? && station_marker['sus'] != '0'
+                $('#mapinfobox > span.station_tot_time_info').text("平均還車間隔：#{(station.bike / 60).toFixed(2)} 分鐘")
+            else if station.bike == 0 && station_marker? && station_marker['sus'] != '0'
+                $('#mapinfobox > span.station_tot_time_info').text("平均還車間隔：無資料")
+            
+            else if station_marker? && station_marker['sus'] == '0'
+                $('#mapinfobox > span.station_tot_time_info').text("已無車位")
+
+
+            if station.slot != Number.MAX_VALUE && station.slot > 0 && station_marker? && station_marker['tot'] != '0'
+                $('#mapinfobox > span.station_sus_time_info').text("平均借車間隔：#{(station.slot / 60).toFixed(2)} 分鐘")
+            else if station.slot == 0 && station_marker? && station_marker['tot'] != '0'
+                $('#mapinfobox > span.station_sus_time_info').text("平均借車間隔：無資料")
+            else if station_marker? && station_marker['tot'] == '0'
+                $('#mapinfobox > span.station_sus_time_info').text("已無車輛")
+
         () <~ google.maps.event.addListener(marker, 'click', _)
-            $('#mapinfobox > span').text(name)
+            modify_info!
             @infowindow.setContent($('.infobox').html!)
             @infowindow.open(@map, marker)
+
+        () <~ google.maps.event.addListener(marker, 'mouseover', _)
+            modify_info!
+            @infowindow.setContent($('.infobox').html!)
+            @infowindow.open(@map, marker)
+ 
  
 () <- $(document).ready!
 
@@ -106,13 +143,13 @@ class UbikeMap
 
     socket = io.connect('http://cml10.csie.ntu.edu.tw:8088')
     (data) <- socket.on('ubike', _)
-        markers = data[0]
-        diffs = data[1]
-        valley_time = data[2]
+        window.markers = data[0]
+        window.diffs = data[1]
+        window.valley_time = data[2]
         #console.log(markers)
         #console.log(diffs)
         #console.log(valley_time)
-        window.update(markers, diffs, valley_time)
+        window.update(window.markers, window.diffs, window.valley_time)
 
         if Object.keys(window.map.get_markers!).length != markers.length
             (marker) <- markers.forEach!

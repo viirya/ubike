@@ -43,10 +43,7 @@
       lat = marker['lat'];
       lng = marker['lng'];
       $scope.current_station_name = station;
-      return window.setTimeout(function() {
-        window.map.set_center(lat, lng);
-        return window.map.show_info(station);
-      }, 500);
+      return window.map.set_center(lat, lng);
     };
   });
 
@@ -90,18 +87,21 @@
       return this.map.setCenter(newlatlng);
     };
 
-    UbikeMap.prototype.show_info = function(name) {
-      var marker;
+    UbikeMap.prototype.show_info = function(name, html) {
+      var marker,
+        _this = this;
       if (this.markers[name] != null) {
         marker = this.markers[name];
-        $('#mapinfobox > span').text(name);
-        this.infowindow.setContent($('.infobox').html());
-        return this.infowindow.open(this.map, marker);
+        html = "<div class='infoboxonmap'><span class='info'>" + name + "</span></div>";
+        return google.maps.event.addListener(marker, 'mouseover', function() {
+          _this.infowindow.setContent(html);
+          return _this.infowindow.open(_this.map, marker);
+        });
       }
     };
 
     UbikeMap.prototype.put_marker = function(lat, lng, name) {
-      var marker, newlatlng,
+      var marker, modify_info, newlatlng,
         _this = this;
       newlatlng = new google.maps.LatLng(lat, lng);
       marker = new google.maps.Marker({
@@ -113,8 +113,42 @@
         }
       });
       this.markers[name] = marker;
-      return google.maps.event.addListener(marker, 'click', function() {
-        $('#mapinfobox > span').text(name);
+      modify_info = function() {
+        var marker_itr, station, station_marker, _i, _len, _ref;
+        station = window.diffs[name];
+        station_marker = null;
+        _ref = window.markers;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          marker_itr = _ref[_i];
+          if (marker_itr.name === name) {
+            station_marker = marker_itr;
+          }
+        }
+        $('#mapinfobox > span.station_name_info').text(name);
+        $('#mapinfobox > span.station_tot_info').text('車輛：' + station_marker['tot']);
+        $('#mapinfobox > span.station_sus_info').text('車位：' + station_marker['sus']);
+        if (station.bike !== Number.MAX_VALUE && station.bike > 0 && (station_marker != null) && station_marker['sus'] !== '0') {
+          $('#mapinfobox > span.station_tot_time_info').text("平均還車間隔：" + ((station.bike / 60).toFixed(2)) + " 分鐘");
+        } else if (station.bike === 0 && (station_marker != null) && station_marker['sus'] !== '0') {
+          $('#mapinfobox > span.station_tot_time_info').text("平均還車間隔：無資料");
+        } else if ((station_marker != null) && station_marker['sus'] === '0') {
+          $('#mapinfobox > span.station_tot_time_info').text("已無車位");
+        }
+        if (station.slot !== Number.MAX_VALUE && station.slot > 0 && (station_marker != null) && station_marker['tot'] !== '0') {
+          return $('#mapinfobox > span.station_sus_time_info').text("平均借車間隔：" + ((station.slot / 60).toFixed(2)) + " 分鐘");
+        } else if (station.slot === 0 && (station_marker != null) && station_marker['tot'] !== '0') {
+          return $('#mapinfobox > span.station_sus_time_info').text("平均借車間隔：無資料");
+        } else if ((station_marker != null) && station_marker['tot'] === '0') {
+          return $('#mapinfobox > span.station_sus_time_info').text("已無車輛");
+        }
+      };
+      google.maps.event.addListener(marker, 'click', function() {
+        modify_info();
+        _this.infowindow.setContent($('.infobox').html());
+        return _this.infowindow.open(_this.map, marker);
+      });
+      return google.maps.event.addListener(marker, 'mouseover', function() {
+        modify_info();
         _this.infowindow.setContent($('.infobox').html());
         return _this.infowindow.open(_this.map, marker);
       });
@@ -129,11 +163,10 @@
     window.current_marker = null;
     socket = io.connect('http://cml10.csie.ntu.edu.tw:8088');
     socket.on('ubike', function(data) {
-      var diffs, markers, valley_time;
-      markers = data[0];
-      diffs = data[1];
-      valley_time = data[2];
-      window.update(markers, diffs, valley_time);
+      window.markers = data[0];
+      window.diffs = data[1];
+      window.valley_time = data[2];
+      window.update(window.markers, window.diffs, window.valley_time);
       if (Object.keys(window.map.get_markers()).length !== markers.length) {
         return markers.forEach(function(marker) {
           return window.map.put_marker(marker.lat, marker.lng, marker.name);

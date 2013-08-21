@@ -226,6 +226,14 @@ header span {
 .main-content a:hover {
   color: #f00;
 }
+.infoboxonmap {
+  height: 200px;
+  width: 200px;
+}
+.infoboxonmap span.info {
+  font-size: 20px;
+  margin-top: 50px;
+}
 .footer {
   float: left;
   height: 100px;

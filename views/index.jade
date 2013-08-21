@@ -1,8 +1,16 @@
 extends layout
 block infobox
-    #mapinfobox(style="height: 200px; width: 200px")
-      span(style="font-size:20px; padding-top:50px;")
+    #mapinfobox(style="height: 150px; width: 300px")
+      span.station_name_info(style="font-size:20px; padding-bottom: 10px; display: block")
         站名
+      span.station_tot_info(style="font-size:20px; padding-bottom: 10px; display: block")
+        車輛  
+      span.station_sus_info(style="font-size:20px; padding-bottom: 10px; display: block")
+        車位 
+      span.station_tot_time_info(style="font-size:20px; padding-bottom: 10px; display: block")
+        平均還車間隔 分鐘
+      span.station_sus_time_info(style="font-size:20px; padding-bottom: 10px; display: block")
+        平均借車間隔 分鐘
 
 block content
     #stations
