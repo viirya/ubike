@@ -151,14 +151,72 @@ class UbikeMap
         #console.log(valley_time)
         window.update(window.markers, window.diffs, window.valley_time)
 
+
         if Object.keys(window.map.get_markers!).length != markers.length
             (marker) <- markers.forEach!
                 window.map.put_marker(marker.lat, marker.lng, marker.name)
 
 
+        window.update_vis!
+
+
     window.map = new UbikeMap('map-canvas')
 
     $(".fancybox").fancybox!
+
+    init_vis = () ->
+
+        svg = d3.select("#d3-canvas").append("svg")
+            .attr("width", 1000)
+            .attr("height", 800)
+
+        window.container = container = svg.append("g")
+            .attr("transform", "translate(" + 50 + "," + 50 + ")")
+
+        title = container.append("text")
+            .attr("color", "red")
+            .attr("font-size", "30px")
+            .attr("transform", "translate(" + 10 + "," + -20 + ")")
+            .text("Ubike")
+
+    window.update_vis = () ->    
+
+        window.container.selectAll("rect")
+            .data(d3.range(0, window.markers.length, 1), (d) -> window.markers[d]['name'])
+            .attr("width", (d) ->
+                n = window.markers[d]['name']
+                if window.diffs[n]? and window.diffs[n].bike isnt 0 and window.diffs[n].bike isnt Number.MAX_VALUE
+                    window.diffs[n].bike    
+                else
+                    0
+            )
+            .attr("height", '20px')
+            .attr('x', 10)
+            .attr('y', (d) -> 25 * d)
+ 
+        window.container.selectAll("rect")
+            .data(d3.range(0, window.markers.length, 1), (d) -> window.markers[d]['name'])
+            .enter!
+            .append('g')
+            .append("rect")
+            .attr("width", (d) -> 
+                n = window.markers[d]['name']
+                if window.diffs[n]? and window.diffs[n].bike isnt 0 and window.diffs[n].bike isnt Number.MAX_VALUE
+                    window.diffs[n].bike    
+                else
+                    0
+            )
+            .attr("height", '20px')
+            .attr('x', 10)
+            .attr('y', (d) -> 25 * d)
+
+        window.container.selectAll('g')
+            .append('text')
+            .text((d) -> window.markers[d]['name'])
+            .attr('x', 20)
+            .attr('y', (d) -> 25 * d + 16)
+
+    init_vis!
 
 
 

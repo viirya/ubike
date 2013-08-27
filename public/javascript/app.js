@@ -159,7 +159,7 @@
   })();
 
   $(document).ready(function() {
-    var socket;
+    var init_vis, socket;
     window.current_marker = null;
     socket = io.connect('http://cml10.csie.ntu.edu.tw:8088');
     socket.on('ubike', function(data) {
@@ -168,13 +168,54 @@
       window.valley_time = data[2];
       window.update(window.markers, window.diffs, window.valley_time);
       if (Object.keys(window.map.get_markers()).length !== markers.length) {
-        return markers.forEach(function(marker) {
+        markers.forEach(function(marker) {
           return window.map.put_marker(marker.lat, marker.lng, marker.name);
         });
       }
+      return window.update_vis();
     });
     window.map = new UbikeMap('map-canvas');
-    return $(".fancybox").fancybox();
+    $(".fancybox").fancybox();
+    init_vis = function() {
+      var container, svg, title;
+      svg = d3.select("#d3-canvas").append("svg").attr("width", 1000).attr("height", 800);
+      window.container = container = svg.append("g").attr("transform", "translate(" + 50 + "," + 50 + ")");
+      return title = container.append("text").attr("color", "red").attr("font-size", "30px").attr("transform", "translate(" + 10 + "," + -20 + ")").text("Ubike");
+    };
+    window.update_vis = function() {
+      window.container.selectAll("rect").data(d3.range(0, window.markers.length, 1), function(d) {
+        return window.markers[d]['name'];
+      }).attr("width", function(d) {
+        var n;
+        n = window.markers[d]['name'];
+        if ((window.diffs[n] != null) && window.diffs[n].bike !== 0 && window.diffs[n].bike !== Number.MAX_VALUE) {
+          return window.diffs[n].bike;
+        } else {
+          return 0;
+        }
+      }).attr("height", '20px').attr('x', 10).attr('y', function(d) {
+        return 25 * d;
+      });
+      window.container.selectAll("rect").data(d3.range(0, window.markers.length, 1), function(d) {
+        return window.markers[d]['name'];
+      }).enter().append('g').append("rect").attr("width", function(d) {
+        var n;
+        n = window.markers[d]['name'];
+        if ((window.diffs[n] != null) && window.diffs[n].bike !== 0 && window.diffs[n].bike !== Number.MAX_VALUE) {
+          return window.diffs[n].bike;
+        } else {
+          return 0;
+        }
+      }).attr("height", '20px').attr('x', 10).attr('y', function(d) {
+        return 25 * d;
+      });
+      return window.container.selectAll('g').append('text').text(function(d) {
+        return window.markers[d]['name'];
+      }).attr('x', 20).attr('y', function(d) {
+        return 25 * d + 16;
+      });
+    };
+    return init_vis();
   });
 
 }).call(this);

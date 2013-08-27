@@ -200,11 +200,13 @@ header span {
 .main-content #stations p.clear {
   clear: both;
 }
-.main-content #box {
+.main-content #box,
+.main-content #d3box {
   width: 1000px;
   height: 800px;
 }
-.main-content #map-canvas {
+.main-content #map-canvas,
+.main-content #d3-canvas {
   margin-top: 50px;
   height: 800px;
   width: 1000px;
@@ -225,6 +227,10 @@ header span {
 }
 .main-content a:hover {
   color: #f00;
+}
+rect {
+  fill-opacity: 0.6;
+  fill: #e377c2;
 }
 .infoboxonmap {
   height: 200px;
