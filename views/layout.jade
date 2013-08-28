@@ -22,8 +22,8 @@ html(ng-app='ubike-web', lang="zh-TW")
             span.figure(ng-click="click_viewtype('figure')") 圖表
           .type
             span.query_type 我要找
-            span.bike(ng-click="predicate='bike'") 車輛
-            span.slot(ng-click="predicate='slot'") 車位
+            span.bike(ng-click="click_querytype('bike')") 車輛
+            span.slot(ng-click="click_querytype('slot')") 車位
           .query
             span.query_title 以站名查詢
             input(id="station_name", autofocus, ng-model="station_name")
@@ -31,9 +31,9 @@ html(ng-app='ubike-web', lang="zh-TW")
         .span11.offset2
           block content
       .row-fluid#figure
-        .span11.offset1
-          #d3box(style="height:9000px; width:1200px;")
-            #d3-canvas(style="height:9000px; width:1200px")
+        .span11.offset2
+          #d3box(style="height:5000px; width:1200px;")
+            #d3-canvas(style="height:5000px; width:1200px")
         .span11.offset2
           #box(style="height:0px; width:0px;margin:-9999px")
             #map-canvas(style="height:1000px; width:1000px")

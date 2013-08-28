@@ -45,6 +45,11 @@
       $scope.current_station_name = station;
       return window.map.set_center(lat, lng);
     };
+    $scope.click_querytype = function(query_type) {
+      $scope.predicate = query_type;
+      window.predicate = query_type;
+      return window.update_vis();
+    };
     return $scope.click_viewtype = function(view_type) {
       console.log(view_type);
       switch (view_type) {
@@ -172,6 +177,7 @@
   $(document).ready(function() {
     var init_vis, socket;
     window.current_marker = null;
+    window.predicate = 'bike';
     socket = io.connect('http://cml10.csie.ntu.edu.tw:8088');
     socket.on('ubike', function(data) {
       window.markers = data[0];
@@ -191,7 +197,7 @@
     $(".fancybox").fancybox();
     init_vis = function() {
       var container, svg;
-      svg = d3.select("#d3-canvas").append("svg").attr("width", 1200).attr("height", 9000);
+      svg = d3.select("#d3-canvas").append("svg").attr("width", 1200).attr("height", 5000);
       window.container = container = svg.append("g").attr("transform", "translate(" + 0 + "," + 0 + ")");
       return $('#figure').hide();
     };
@@ -213,31 +219,68 @@
       groups.append("rect").attr("width", function(d) {
         var n;
         n = markers[d]['name'];
-        if ((window.diffs[n] != null) && window.diffs[n].bike !== 0 && window.diffs[n].bike !== Number.MAX_VALUE) {
-          return window.diffs[n].bike;
+        if (window.predicate === 'bike') {
+          if ((window.diffs[n] != null) && window.diffs[n].bike !== 0 && window.diffs[n].bike !== Number.MAX_VALUE) {
+            return window.diffs[n].bike / 60 * 2;
+          } else {
+            return 0;
+          }
         } else {
-          return 0;
+          if ((window.diffs[n] != null) && window.diffs[n].slot !== 0 && window.diffs[n].slot !== Number.MAX_VALUE) {
+            return window.diffs[n].slot / 60 * 2;
+          } else {
+            return 0;
+          }
         }
       }).attr("height", '30px').attr('x', 10).attr('y', function(d) {
         return 35 * d;
       });
       groups.append('text').text(function(d) {
-        return markers[d]['name'] + ' ' + d;
+        return markers[d]['name'];
       }).style('font-size', '20px').attr('x', 20).attr('y', function(d) {
         return 35 * d + 26;
       });
-      return window.container.selectAll("rect").data(d3.range(0, markers.length, 1), function(d) {
+      window.container.selectAll("rect").data(d3.range(0, markers.length, 1), function(d) {
         return markers[d]['name'];
       }).attr("width", function(d) {
         var n;
         n = markers[d]['name'];
-        if ((window.diffs[n] != null) && window.diffs[n].bike !== 0 && window.diffs[n].bike !== Number.MAX_VALUE) {
-          return window.diffs[n].bike;
+        if (window.predicate === 'bike') {
+          if ((window.diffs[n] != null) && window.diffs[n].bike !== 0 && window.diffs[n].bike !== Number.MAX_VALUE) {
+            return window.diffs[n].bike / 60 * 2;
+          } else {
+            return 0;
+          }
         } else {
-          return 0;
+          if ((window.diffs[n] != null) && window.diffs[n].slot !== 0 && window.diffs[n].slot !== Number.MAX_VALUE) {
+            return window.diffs[n].slot / 60 * 2;
+          } else {
+            return 0;
+          }
         }
       }).attr("height", '30px').attr('x', 10).attr('y', function(d) {
         return 35 * d;
+      });
+      return window.container.selectAll('text').data(d3.range(0, markers.length, 1), function(d) {
+        return markers[d]['name'];
+      }).text(function(d) {
+        var bike, n, slot;
+        n = markers[d]['name'];
+        if (window.predicate === 'bike') {
+          bike = markers[d]['name'] + ' 平均還車間隔：';
+          if ((window.diffs[n] != null) && window.diffs[n].bike !== 0 && window.diffs[n].bike !== Number.MAX_VALUE) {
+            return bike + window.diffs[n].bike / 60 + ' 分鐘';
+          } else {
+            return bike + '無資料';
+          }
+        } else {
+          slot = markers[d]['name'] + ' 平均借車間隔：';
+          if ((window.diffs[n] != null) && window.diffs[n].slot !== 0 && window.diffs[n].slot !== Number.MAX_VALUE) {
+            return slot + window.diffs[n].slot / 60 + ' 分鐘';
+          } else {
+            return slot + '無資料';
+          }
+        }
       });
     };
     return init_vis();

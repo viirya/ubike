@@ -45,7 +45,13 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
 
         window.map.set_center(lat, lng)
         #window.map.show_info(station)
+ 
+    $scope.click_querytype = (query_type) ->
+        $scope.predicate = query_type
+        window.predicate = query_type
 
+        window.update_vis!
+ 
     $scope.click_viewtype = (view_type) ->
         console.log(view_type)
 
@@ -151,6 +157,7 @@ class UbikeMap
 
 
     window.current_marker = null
+    window.predicate = 'bike'
 
     socket = io.connect('http://cml10.csie.ntu.edu.tw:8088')
     (data) <- socket.on('ubike', _)
@@ -178,7 +185,7 @@ class UbikeMap
 
         svg = d3.select("#d3-canvas").append("svg")
             .attr("width", 1200)
-            .attr("height", 9000)
+            .attr("height", 5000)
 
         window.container = container = svg.append("g")
             .attr("transform", "translate(" + 0 + "," + 0 + ")")
@@ -210,10 +217,16 @@ class UbikeMap
         groups.append("rect")
             .attr("width", (d) -> 
                 n = markers[d]['name']
-                if window.diffs[n]? and window.diffs[n].bike isnt 0 and window.diffs[n].bike isnt Number.MAX_VALUE
-                    window.diffs[n].bike    
+                if window.predicate is 'bike'
+                    if window.diffs[n]? and window.diffs[n].bike isnt 0 and window.diffs[n].bike isnt Number.MAX_VALUE
+                        window.diffs[n].bike / 60 * 2   
+                    else
+                        0
                 else
-                    0
+                    if window.diffs[n]? and window.diffs[n].slot isnt 0 and window.diffs[n].slot isnt Number.MAX_VALUE
+                        window.diffs[n].slot / 60 * 2   
+                    else
+                        0
             )
             .attr("height", '30px')
             .attr('x', 10)
@@ -221,7 +234,7 @@ class UbikeMap
 
         #window.container.selectAll('g')
         groups.append('text')
-            .text((d) -> markers[d]['name'] + ' ' + d)
+            .text((d) -> markers[d]['name'])
             .style('font-size', '20px')
             .attr('x', 20)
             .attr('y', (d) -> 35 * d + 26)
@@ -231,14 +244,39 @@ class UbikeMap
             .data(d3.range(0, markers.length, 1), (d) -> markers[d]['name'])
             .attr("width", (d) ->
                 n = markers[d]['name']
-                if window.diffs[n]? and window.diffs[n].bike isnt 0 and window.diffs[n].bike isnt Number.MAX_VALUE
-                    window.diffs[n].bike    
+                if window.predicate is 'bike'
+                    if window.diffs[n]? and window.diffs[n].bike isnt 0 and window.diffs[n].bike isnt Number.MAX_VALUE
+                        window.diffs[n].bike / 60 * 2  
+                    else
+                        0
                 else
-                    0
+                    if window.diffs[n]? and window.diffs[n].slot isnt 0 and window.diffs[n].slot isnt Number.MAX_VALUE
+                        window.diffs[n].slot / 60 * 2  
+                    else
+                        0
             )
             .attr("height", '30px')
             .attr('x', 10)
             .attr('y', (d) -> 35 * d)
+ 
+        window.container.selectAll('text')
+            .data(d3.range(0, markers.length, 1), (d) -> markers[d]['name'])
+            .text((d) ->
+                n = markers[d]['name']
+
+                if window.predicate is 'bike'
+                    bike = markers[d]['name'] + ' 平均還車間隔：'
+                    if window.diffs[n]? and window.diffs[n].bike isnt 0 and window.diffs[n].bike isnt Number.MAX_VALUE
+                        return bike + window.diffs[n].bike / 60 + ' 分鐘'
+                    else
+                        return bike + '無資料'
+                else
+                    slot = markers[d]['name'] + ' 平均借車間隔：'
+                    if window.diffs[n]? and window.diffs[n].slot isnt 0 and window.diffs[n].slot isnt Number.MAX_VALUE
+                        return slot + window.diffs[n].slot / 60 + ' 分鐘'
+                    else
+                        return slot + '無資料'
+            )
  
     init_vis!
 
