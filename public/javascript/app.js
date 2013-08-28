@@ -37,13 +37,24 @@
         return station.slot !== Number.MAX_VALUE;
       }
     };
-    return $scope.click_station = function(station) {
+    $scope.click_station = function(station) {
       var lat, lng, marker;
       marker = $scope.markers[station];
       lat = marker['lat'];
       lng = marker['lng'];
       $scope.current_station_name = station;
       return window.map.set_center(lat, lng);
+    };
+    return $scope.click_viewtype = function(view_type) {
+      console.log(view_type);
+      switch (view_type) {
+        case 'table':
+          $('#table').show();
+          return $('#figure').hide();
+        case 'figure':
+          $('#table').hide();
+          return $('#figure').show();
+      }
     };
   });
 
@@ -167,52 +178,66 @@
       window.diffs = data[1];
       window.valley_time = data[2];
       window.update(window.markers, window.diffs, window.valley_time);
-      if (Object.keys(window.map.get_markers()).length !== markers.length) {
+      if ((typeof markers !== "undefined" && markers !== null) && Object.keys(window.map.get_markers()).length !== markers.length) {
         markers.forEach(function(marker) {
           return window.map.put_marker(marker.lat, marker.lng, marker.name);
         });
       }
-      return window.update_vis();
+      if (typeof markers !== "undefined" && markers !== null) {
+        return window.update_vis();
+      }
     });
     window.map = new UbikeMap('map-canvas');
     $(".fancybox").fancybox();
     init_vis = function() {
-      var container, svg, title;
-      svg = d3.select("#d3-canvas").append("svg").attr("width", 1000).attr("height", 800);
-      window.container = container = svg.append("g").attr("transform", "translate(" + 50 + "," + 50 + ")");
-      return title = container.append("text").attr("color", "red").attr("font-size", "30px").attr("transform", "translate(" + 10 + "," + -20 + ")").text("Ubike");
+      var container, svg;
+      svg = d3.select("#d3-canvas").append("svg").attr("width", 1200).attr("height", 9000);
+      window.container = container = svg.append("g").attr("transform", "translate(" + 0 + "," + 0 + ")");
+      return $('#figure').hide();
     };
     window.update_vis = function() {
-      window.container.selectAll("rect").data(d3.range(0, window.markers.length, 1), function(d) {
-        return window.markers[d]['name'];
+      var count, groups, marker, markers, _i, _len, _ref;
+      count = {};
+      markers = [];
+      _ref = window.markers;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        marker = _ref[_i];
+        if (count[marker.name] == null) {
+          count[marker.name] = 1;
+          markers.push(marker);
+        }
+      }
+      groups = window.container.selectAll("rect").data(d3.range(0, markers.length, 1), function(d) {
+        return markers[d]['name'];
+      }).enter().append('g');
+      groups.append("rect").attr("width", function(d) {
+        var n;
+        n = markers[d]['name'];
+        if ((window.diffs[n] != null) && window.diffs[n].bike !== 0 && window.diffs[n].bike !== Number.MAX_VALUE) {
+          return window.diffs[n].bike;
+        } else {
+          return 0;
+        }
+      }).attr("height", '30px').attr('x', 10).attr('y', function(d) {
+        return 35 * d;
+      });
+      groups.append('text').text(function(d) {
+        return markers[d]['name'] + ' ' + d;
+      }).style('font-size', '20px').attr('x', 20).attr('y', function(d) {
+        return 35 * d + 26;
+      });
+      return window.container.selectAll("rect").data(d3.range(0, markers.length, 1), function(d) {
+        return markers[d]['name'];
       }).attr("width", function(d) {
         var n;
-        n = window.markers[d]['name'];
+        n = markers[d]['name'];
         if ((window.diffs[n] != null) && window.diffs[n].bike !== 0 && window.diffs[n].bike !== Number.MAX_VALUE) {
           return window.diffs[n].bike;
         } else {
           return 0;
         }
-      }).attr("height", '20px').attr('x', 10).attr('y', function(d) {
-        return 25 * d;
-      });
-      window.container.selectAll("rect").data(d3.range(0, window.markers.length, 1), function(d) {
-        return window.markers[d]['name'];
-      }).enter().append('g').append("rect").attr("width", function(d) {
-        var n;
-        n = window.markers[d]['name'];
-        if ((window.diffs[n] != null) && window.diffs[n].bike !== 0 && window.diffs[n].bike !== Number.MAX_VALUE) {
-          return window.diffs[n].bike;
-        } else {
-          return 0;
-        }
-      }).attr("height", '20px').attr('x', 10).attr('y', function(d) {
-        return 25 * d;
-      });
-      return window.container.selectAll('g').append('text').text(function(d) {
-        return window.markers[d]['name'];
-      }).attr('x', 20).attr('y', function(d) {
-        return 25 * d + 16;
+      }).attr("height", '30px').attr('x', 10).attr('y', function(d) {
+        return 35 * d;
       });
     };
     return init_vis();

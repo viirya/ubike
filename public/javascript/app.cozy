@@ -45,7 +45,18 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
 
         window.map.set_center(lat, lng)
         #window.map.show_info(station)
+
+    $scope.click_viewtype = (view_type) ->
+        console.log(view_type)
+
+        switch view_type
+            when 'table'
+                $('#table').show!
+                $('#figure').hide!
  
+            when 'figure'
+                $('#table').hide!
+                $('#figure').show!
 
 class UbikeMap
 
@@ -151,13 +162,12 @@ class UbikeMap
         #console.log(valley_time)
         window.update(window.markers, window.diffs, window.valley_time)
 
-
-        if Object.keys(window.map.get_markers!).length != markers.length
+        if markers? and Object.keys(window.map.get_markers!).length != markers.length
             (marker) <- markers.forEach!
                 window.map.put_marker(marker.lat, marker.lng, marker.name)
 
-
-        window.update_vis!
+        if markers?
+            window.update_vis!
 
 
     window.map = new UbikeMap('map-canvas')
@@ -167,55 +177,69 @@ class UbikeMap
     init_vis = () ->
 
         svg = d3.select("#d3-canvas").append("svg")
-            .attr("width", 1000)
-            .attr("height", 800)
+            .attr("width", 1200)
+            .attr("height", 9000)
 
         window.container = container = svg.append("g")
-            .attr("transform", "translate(" + 50 + "," + 50 + ")")
+            .attr("transform", "translate(" + 0 + "," + 0 + ")")
 
-        title = container.append("text")
-            .attr("color", "red")
-            .attr("font-size", "30px")
-            .attr("transform", "translate(" + 10 + "," + -20 + ")")
-            .text("Ubike")
+        # title = container.append("text")
+        #    .attr("color", "red")
+        #    .attr("font-size", "30px")
+        #    .attr("transform", "translate(" + 10 + "," + -20 + ")")
+        #    .text("Ubike")
+
+        $('#figure').hide!
 
     window.update_vis = () ->    
 
-        window.container.selectAll("rect")
-            .data(d3.range(0, window.markers.length, 1), (d) -> window.markers[d]['name'])
-            .attr("width", (d) ->
-                n = window.markers[d]['name']
-                if window.diffs[n]? and window.diffs[n].bike isnt 0 and window.diffs[n].bike isnt Number.MAX_VALUE
-                    window.diffs[n].bike    
-                else
-                    0
-            )
-            .attr("height", '20px')
-            .attr('x', 10)
-            .attr('y', (d) -> 25 * d)
- 
-        window.container.selectAll("rect")
-            .data(d3.range(0, window.markers.length, 1), (d) -> window.markers[d]['name'])
+        # de-duplicate
+        count = {}
+        markers = []
+        for marker in window.markers
+            unless count[marker.name]?
+                count[marker.name] = 1
+                markers.push(marker)
+
+        # create new ones
+        groups = window.container.selectAll("rect")
+            .data(d3.range(0, markers.length, 1), (d) -> markers[d]['name'])
             .enter!
             .append('g')
-            .append("rect")
+
+        groups.append("rect")
             .attr("width", (d) -> 
-                n = window.markers[d]['name']
+                n = markers[d]['name']
                 if window.diffs[n]? and window.diffs[n].bike isnt 0 and window.diffs[n].bike isnt Number.MAX_VALUE
                     window.diffs[n].bike    
                 else
                     0
             )
-            .attr("height", '20px')
+            .attr("height", '30px')
             .attr('x', 10)
-            .attr('y', (d) -> 25 * d)
+            .attr('y', (d) -> 35 * d)
 
-        window.container.selectAll('g')
-            .append('text')
-            .text((d) -> window.markers[d]['name'])
+        #window.container.selectAll('g')
+        groups.append('text')
+            .text((d) -> markers[d]['name'] + ' ' + d)
+            .style('font-size', '20px')
             .attr('x', 20)
-            .attr('y', (d) -> 25 * d + 16)
-
+            .attr('y', (d) -> 35 * d + 26)
+ 
+        # update
+        window.container.selectAll("rect")
+            .data(d3.range(0, markers.length, 1), (d) -> markers[d]['name'])
+            .attr("width", (d) ->
+                n = markers[d]['name']
+                if window.diffs[n]? and window.diffs[n].bike isnt 0 and window.diffs[n].bike isnt Number.MAX_VALUE
+                    window.diffs[n].bike    
+                else
+                    0
+            )
+            .attr("height", '30px')
+            .attr('x', 10)
+            .attr('y', (d) -> 35 * d)
+ 
     init_vis!
 
 

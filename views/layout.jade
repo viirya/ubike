@@ -16,6 +16,10 @@ html(ng-app='ubike-web', lang="zh-TW")
           .title Ubike 車輛與車位租借狀況
       .row-fluid
         .span11.offset4
+          .viewtype
+            span.view_type 我要看
+            span.table(ng-click="click_viewtype('table')") 數據
+            span.figure(ng-click="click_viewtype('figure')") 圖表
           .type
             span.query_type 我要找
             span.bike(ng-click="predicate='bike'") 車輛
@@ -23,16 +27,16 @@ html(ng-app='ubike-web', lang="zh-TW")
           .query
             span.query_title 以站名查詢
             input(id="station_name", autofocus, ng-model="station_name")
-      .row-fluid
+      .row-fluid#table
         .span11.offset2
           block content
-      .row-fluid
+      .row-fluid#figure
+        .span11.offset1
+          #d3box(style="height:9000px; width:1200px;")
+            #d3-canvas(style="height:9000px; width:1200px")
         .span11.offset2
           #box(style="height:0px; width:0px;margin:-9999px")
-            #map-canvas(style="height:800px; width:1000px")
-        .span11.offset2
-          #d3box(style="height:800px; width:1000px;")
-            #d3-canvas(style="height:800px; width:1000px")
+            #map-canvas(style="height:1000px; width:1000px")
         .span11.offset2
           .infobox
             block infobox

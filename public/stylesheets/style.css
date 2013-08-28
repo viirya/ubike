@@ -138,20 +138,29 @@ header span {
 .main-content span.query_title,
 .main-content span.query_type,
 .main-content span.bike,
-.main-content span.slot {
+.main-content span.slot,
+.main-content span.view_type,
+.main-content span.table,
+.main-content span.figure {
   font-size: 28px;
   margin-right: 10px;
 }
 .main-content span.bike:hover,
-.main-content span.slot:hover {
+.main-content span.slot:hover,
+.main-content span.table:hover,
+.main-content span.figure:hover {
   color: #f00;
 }
-.main-content span.query_type {
+.main-content span.query_type,
+.main-content span.view_type {
   margin-left: 100px;
 }
 .main-content .type,
 .main-content .query {
   margin-bottom: 50px;
+}
+.main-content .viewtype {
+  margin-bottom: 20px;
 }
 .main-content p.desc {
   font-size: 18px;
@@ -207,7 +216,7 @@ header span {
 }
 .main-content #map-canvas,
 .main-content #d3-canvas {
-  margin-top: 50px;
+  margin-top: 10px;
   height: 800px;
   width: 1000px;
 }
