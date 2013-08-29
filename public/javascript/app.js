@@ -197,9 +197,13 @@
     $(".fancybox").fancybox();
     init_vis = function() {
       var container, svg;
-      svg = d3.select("#d3-canvas").append("svg").attr("width", 1200).attr("height", 5000);
+      svg = d3.select("#d3-canvas").append("svg").attr("width", 1200).attr("height", 4000);
       window.container = container = svg.append("g").attr("transform", "translate(" + 0 + "," + 0 + ")");
-      return $('#figure').hide();
+      $('#figure').hide();
+      window.inspector = d3.select('body').append('div').attr('class', 'inspector').style('opacity', 0);
+      window.station_label = window.inspector.append('p');
+      window.bike_label = window.inspector.append('p');
+      return window.slot_label = window.inspector.append('p');
     };
     window.update_vis = function() {
       var count, groups, marker, markers, _i, _len, _ref;
@@ -269,18 +273,42 @@
         if (window.predicate === 'bike') {
           bike = markers[d]['name'] + ' 平均還車間隔：';
           if ((window.diffs[n] != null) && window.diffs[n].bike !== 0 && window.diffs[n].bike !== Number.MAX_VALUE) {
-            return bike + window.diffs[n].bike / 60 + ' 分鐘';
+            return bike + (window.diffs[n].bike / 60).toFixed(2) + ' 分鐘';
           } else {
             return bike + '無資料';
           }
         } else {
           slot = markers[d]['name'] + ' 平均借車間隔：';
           if ((window.diffs[n] != null) && window.diffs[n].slot !== 0 && window.diffs[n].slot !== Number.MAX_VALUE) {
-            return slot + window.diffs[n].slot / 60 + ' 分鐘';
+            return slot + (window.diffs[n].slot / 60).toFixed(2) + ' 分鐘';
           } else {
             return slot + '無資料';
           }
         }
+      }).on('mouseover', function(d) {
+        marker = markers[d];
+        window.inspector.transition().duration(200).style('opacity', 0.9);
+        window.station_label.text('站名：' + marker.name);
+        window.bike_label.text('車輛：' + marker.tot);
+        window.slot_label.text('車位：' + marker.sus);
+        window.inspector.style('left', d3.event.pageX + "px");
+        return window.inspector.style('top', (d3.event.pageY - 30) + "px");
+      }).on('mouseout', function(d) {
+        return window.inspector.transition().duration(500).style('opacity', 0.0);
+      }).on('click', function(d) {
+        var lat, lng;
+        marker = markers[d];
+        lat = marker['lat'];
+        lng = marker['lng'];
+        window.map.set_center(lat, lng);
+        return $.fancybox.open([
+          {
+            href: '#map-canvas',
+            title: 'Ubike Map'
+          }
+        ], {
+          padding: 0
+        });
       });
     };
     return init_vis();
