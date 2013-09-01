@@ -12,6 +12,26 @@
     $scope.current_station_name = "";
     $scope.predicate = "bike";
     $scope.station_name = "";
+    $scope.$watch('station_name', function(v) {
+      var marker, markers, _i, _len, _ref;
+      if (v !== '') {
+        markers = [];
+        _ref = window.markers;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          marker = _ref[_i];
+          if (marker.name.indexOf(v) !== -1) {
+            markers.push(marker);
+          }
+        }
+        if (markers.length > 0) {
+          return window.update_vis(markers);
+        } else {
+          return window.update_vis(window.markers);
+        }
+      } else {
+        return window.update_vis(window.markers);
+      }
+    });
     window.update = function(new_markers, new_diffs, new_valley_time) {
       var marker, station, station_name, _i, _len;
       $scope.stations = [];
@@ -48,10 +68,9 @@
     $scope.click_querytype = function(query_type) {
       $scope.predicate = query_type;
       window.predicate = query_type;
-      return window.update_vis();
+      return window.update_vis(window.markers);
     };
     return $scope.click_viewtype = function(view_type) {
-      console.log(view_type);
       switch (view_type) {
         case 'table':
           $('#table').show();
@@ -178,19 +197,20 @@
     var init_vis, socket;
     window.current_marker = null;
     window.predicate = 'bike';
+    window.current_station_name = '';
     socket = io.connect('http://cml10.csie.ntu.edu.tw:8088');
     socket.on('ubike', function(data) {
       window.markers = data[0];
       window.diffs = data[1];
       window.valley_time = data[2];
       window.update(window.markers, window.diffs, window.valley_time);
-      if ((typeof markers !== "undefined" && markers !== null) && Object.keys(window.map.get_markers()).length !== markers.length) {
-        markers.forEach(function(marker) {
+      if ((window.markers != null) && Object.keys(window.map.get_markers()).length !== window.markers.length) {
+        window.markers.forEach(function(marker) {
           return window.map.put_marker(marker.lat, marker.lng, marker.name);
         });
       }
-      if (typeof markers !== "undefined" && markers !== null) {
-        return window.update_vis();
+      if (window.markers != null) {
+        return window.update_vis(window.markers);
       }
     });
     window.map = new UbikeMap('map-canvas');
@@ -205,18 +225,24 @@
       window.bike_label = window.inspector.append('p');
       return window.slot_label = window.inspector.append('p');
     };
-    window.update_vis = function() {
-      var count, groups, marker, markers, _i, _len, _ref;
+    window.update_vis = function(input_markers) {
+      var count, groups, marker, markers, _i, _len;
       count = {};
       markers = [];
-      _ref = window.markers;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        marker = _ref[_i];
+      for (_i = 0, _len = input_markers.length; _i < _len; _i++) {
+        marker = input_markers[_i];
         if (count[marker.name] == null) {
           count[marker.name] = 1;
           markers.push(marker);
         }
       }
+      groups = window.container.selectAll("g").data(d3.range(0, markers.length, 1), function(d) {
+        if (markers[d] != null) {
+          return markers[d]['name'];
+        } else {
+          return null;
+        }
+      }).exit().remove();
       groups = window.container.selectAll("rect").data(d3.range(0, markers.length, 1), function(d) {
         return markers[d]['name'];
       }).enter().append('g');

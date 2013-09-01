@@ -10,6 +10,21 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
     $scope.predicate = "bike"
     $scope.station_name = ""
 
+    (v) <- $scope.$watch('station_name', _)
+        if v isnt ''
+            markers = []
+            for marker in window.markers
+                if marker.name.indexOf(v) isnt -1
+                    markers.push(marker)
+
+            if markers.length > 0
+                window.update_vis(markers)
+            else
+                window.update_vis(window.markers)
+        else
+            window.update_vis(window.markers)
+
+
     window.update = (new_markers, new_diffs, new_valley_time) ->
         #console.log('update')
         $scope.stations = []
@@ -49,10 +64,9 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
         $scope.predicate = query_type
         window.predicate = query_type
 
-        window.update_vis!
+        window.update_vis(window.markers)
  
     $scope.click_viewtype = (view_type) ->
-        console.log(view_type)
 
         switch view_type
             when 'table'
@@ -157,23 +171,21 @@ class UbikeMap
 
     window.current_marker = null
     window.predicate = 'bike'
+    window.current_station_name = ''
 
     socket = io.connect('http://cml10.csie.ntu.edu.tw:8088')
     (data) <- socket.on('ubike', _)
         window.markers = data[0]
         window.diffs = data[1]
         window.valley_time = data[2]
-        #console.log(markers)
-        #console.log(diffs)
-        #console.log(valley_time)
         window.update(window.markers, window.diffs, window.valley_time)
 
-        if markers? and Object.keys(window.map.get_markers!).length != markers.length
-            (marker) <- markers.forEach!
+        if window.markers? and Object.keys(window.map.get_markers!).length != window.markers.length
+            (marker) <- window.markers.forEach!
                 window.map.put_marker(marker.lat, marker.lng, marker.name)
 
-        if markers?
-            window.update_vis!
+        if window.markers?
+            window.update_vis(window.markers)
 
 
     window.map = new UbikeMap('map-canvas')
@@ -208,15 +220,26 @@ class UbikeMap
         window.slot_label = window.inspector.append('p')
 
 
-    window.update_vis = () ->    
+    window.update_vis = (input_markers) ->    
 
         # de-duplicate
         count = {}
         markers = []
-        for marker in window.markers
+        for marker in input_markers
             unless count[marker.name]?
                 count[marker.name] = 1
                 markers.push(marker)
+
+        # remove unselected items
+        groups = window.container.selectAll("g")
+            .data(d3.range(0, markers.length, 1), (d) ->
+                if markers[d]?
+                    markers[d]['name']
+                else
+                    null
+            )
+            .exit!
+            .remove!
 
         # create new ones
         groups = window.container.selectAll("rect")
