@@ -14,22 +14,24 @@
     $scope.station_name = "";
     $scope.$watch('station_name', function(v) {
       var marker, markers, _i, _len, _ref;
-      if (v !== '') {
-        markers = [];
-        _ref = window.markers;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          marker = _ref[_i];
-          if (marker.name.indexOf(v) !== -1) {
-            markers.push(marker);
+      if (window.update_vis != null) {
+        if (v !== '') {
+          markers = [];
+          _ref = window.markers;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            marker = _ref[_i];
+            if (marker.name.indexOf(v) !== -1) {
+              markers.push(marker);
+            }
           }
-        }
-        if (markers.length > 0) {
-          return window.update_vis(markers);
+          if (markers.length > 0) {
+            return window.update_vis(markers);
+          } else {
+            return window.update_vis(window.markers);
+          }
         } else {
           return window.update_vis(window.markers);
         }
-      } else {
-        return window.update_vis(window.markers);
       }
     });
     window.update = function(new_markers, new_diffs, new_valley_time) {

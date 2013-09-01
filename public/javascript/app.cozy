@@ -11,18 +11,19 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
     $scope.station_name = ""
 
     (v) <- $scope.$watch('station_name', _)
-        if v isnt ''
-            markers = []
-            for marker in window.markers
-                if marker.name.indexOf(v) isnt -1
-                    markers.push(marker)
-
-            if markers.length > 0
-                window.update_vis(markers)
+        if window.update_vis?
+            if v isnt ''
+                markers = []
+                for marker in window.markers
+                    if marker.name.indexOf(v) isnt -1
+                        markers.push(marker)
+            
+                if markers.length > 0
+                    window.update_vis(markers)
+                else
+                    window.update_vis(window.markers)
             else
                 window.update_vis(window.markers)
-        else
-            window.update_vis(window.markers)
 
 
     window.update = (new_markers, new_diffs, new_valley_time) ->
