@@ -11,19 +11,19 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
     $scope.station_name = ""
 
     (v) <- $scope.$watch('station_name', _)
+        window.query_station_name = v
         if window.update_vis?
-            if v isnt ''
-                markers = []
-                for marker in window.markers
-                    if marker.name.indexOf(v) isnt -1
-                        markers.push(marker)
-            
-                if markers.length > 0
-                    window.update_vis(markers)
-                else
-                    window.update_vis(window.markers)
-            else
-                window.update_vis(window.markers)
+            window.update_vis!
+
+        # if window.update_vis?
+        #     markers = [] 
+        #     if v isnt ''
+        #         for marker in window.markers
+        #             if marker.name.indexOf(v) isnt -1
+        #                 markers.push(marker)
+        # 
+        #     window.filtered_markers = markers
+        #     window.update_vis!
 
 
     window.update = (new_markers, new_diffs, new_valley_time) ->
@@ -65,7 +65,7 @@ app = angular.module('ubike-web', ['ngRoute', 'ngResource', 'ngAnimate'])
         $scope.predicate = query_type
         window.predicate = query_type
 
-        window.update_vis(window.markers)
+        window.update_vis!
  
     $scope.click_viewtype = (view_type) ->
 
@@ -172,7 +172,8 @@ class UbikeMap
 
     window.current_marker = null
     window.predicate = 'bike'
-    window.current_station_name = ''
+    #window.current_station_name = ''
+    window.query_station_name = ''
 
     socket = io.connect('http://cml10.csie.ntu.edu.tw:8088')
     (data) <- socket.on('ubike', _)
@@ -186,7 +187,7 @@ class UbikeMap
                 window.map.put_marker(marker.lat, marker.lng, marker.name)
 
         if window.markers?
-            window.update_vis(window.markers)
+            window.update_vis!
 
 
     window.map = new UbikeMap('map-canvas')
@@ -221,8 +222,16 @@ class UbikeMap
         window.slot_label = window.inspector.append('p')
 
 
-    window.update_vis = (input_markers) ->    
+    window.update_vis = () ->    
 
+        input_markers = []
+        if window.query_station_name isnt ''
+            for marker in window.markers
+                if marker.name.indexOf(window.query_station_name) isnt -1
+                    input_markers.push(marker)
+        else
+            input_markers = window.markers
+        
         # de-duplicate
         count = {}
         markers = []

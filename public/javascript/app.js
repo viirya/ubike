@@ -13,25 +13,9 @@
     $scope.predicate = "bike";
     $scope.station_name = "";
     $scope.$watch('station_name', function(v) {
-      var marker, markers, _i, _len, _ref;
+      window.query_station_name = v;
       if (window.update_vis != null) {
-        if (v !== '') {
-          markers = [];
-          _ref = window.markers;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            marker = _ref[_i];
-            if (marker.name.indexOf(v) !== -1) {
-              markers.push(marker);
-            }
-          }
-          if (markers.length > 0) {
-            return window.update_vis(markers);
-          } else {
-            return window.update_vis(window.markers);
-          }
-        } else {
-          return window.update_vis(window.markers);
-        }
+        return window.update_vis();
       }
     });
     window.update = function(new_markers, new_diffs, new_valley_time) {
@@ -70,7 +54,7 @@
     $scope.click_querytype = function(query_type) {
       $scope.predicate = query_type;
       window.predicate = query_type;
-      return window.update_vis(window.markers);
+      return window.update_vis();
     };
     return $scope.click_viewtype = function(view_type) {
       switch (view_type) {
@@ -199,7 +183,7 @@
     var init_vis, socket;
     window.current_marker = null;
     window.predicate = 'bike';
-    window.current_station_name = '';
+    window.query_station_name = '';
     socket = io.connect('http://cml10.csie.ntu.edu.tw:8088');
     socket.on('ubike', function(data) {
       window.markers = data[0];
@@ -212,7 +196,7 @@
         });
       }
       if (window.markers != null) {
-        return window.update_vis(window.markers);
+        return window.update_vis();
       }
     });
     window.map = new UbikeMap('map-canvas');
@@ -227,12 +211,24 @@
       window.bike_label = window.inspector.append('p');
       return window.slot_label = window.inspector.append('p');
     };
-    window.update_vis = function(input_markers) {
-      var count, groups, marker, markers, _i, _len;
+    window.update_vis = function() {
+      var count, groups, input_markers, marker, markers, _i, _j, _len, _len1, _ref;
+      input_markers = [];
+      if (window.query_station_name !== '') {
+        _ref = window.markers;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          marker = _ref[_i];
+          if (marker.name.indexOf(window.query_station_name) !== -1) {
+            input_markers.push(marker);
+          }
+        }
+      } else {
+        input_markers = window.markers;
+      }
       count = {};
       markers = [];
-      for (_i = 0, _len = input_markers.length; _i < _len; _i++) {
-        marker = input_markers[_i];
+      for (_j = 0, _len1 = input_markers.length; _j < _len1; _j++) {
+        marker = input_markers[_j];
         if (count[marker.name] == null) {
           count[marker.name] = 1;
           markers.push(marker);
